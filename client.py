@@ -107,11 +107,14 @@ def start_client():
             client_socket.connect((host, port))
             print(f"✅ Sunucuya bağlandınız: {host}:{port}")
 
-            # Bağlantı kurulduktan sonra sunucunun gönderdiği ilk mesajı alıyoruz.
+            # Bağlantı kurulduktan sonra, sunucunun ilk recv() çağrısına cevap verebilmek için bir "handshake" mesajı gönderiyoruz.
+            client_socket.send("HELLO".encode('utf-8'))
+            
+            # Sunucunun gönderdiği ilk mesajı alıyoruz (protokol mesajı).
             update_status = client_socket.recv(1024).decode('utf-8')
             if update_status != "UPDATE_NOT_NEEDED":
                 print("Güncelleme mesajı:", update_status)
-            break  # Bağlantı başarılı olunca döngüden çık
+            break  # Bağlantı başarılı olduğunda döngüden çık
 
         except ConnectionRefusedError:
             print("❌ Sunucu şu anda kapalı, lütfen daha sonra tekrar deneyiniz.")
@@ -151,7 +154,7 @@ def start_client():
             else:
                 print("Geçersiz seçim. Lütfen tekrar deneyin.")
 
-            # Sunucunun hâlâ bağlı olup olmadığını kontrol et
+            # Bağlantının hâlâ aktif olduğunu kontrol etmek için PING gönderiyoruz.
             client_socket.send(b'PING')
             time.sleep(2)
 
