@@ -130,7 +130,13 @@ def start_client():
             print("1. Send Message")
             print("2. Mining")
             print("3. Transfer")
-            print("4. Exit")
+            print("4. Airdrop")
+            print("5. Wallet")
+            print("6. Balance")
+            print("7. Account")
+            print("8. Server")
+            print("9. Server Status")  # Yeni seçenek
+            print("10. Exit")
 
             choice = input("Enter your choice: ")
 
@@ -149,6 +155,24 @@ def start_client():
                 transfer_menu(client_socket)
 
             elif choice == '4':
+                airdrop_menu(client_socket)
+
+            elif choice == '5':
+                wallet_menu(client_socket)
+
+            elif choice == '6':
+                balance_menu(client_socket)
+
+            elif choice == '7':
+                account_menu(client_socket)
+
+            elif choice == '8':
+                server_menu(client_socket)
+
+            elif choice == '9':
+                server_status(client_socket)  # Server Status menüsünü çağırın
+
+            elif choice == '10':
                 break
 
             else:
@@ -165,6 +189,37 @@ def start_client():
 
     finally:
         client_socket.close()
+
+
+def server_status(client_socket):
+    print("\n--- SERVER STATUS ---")
+    print("This feature is still under development.")
+    input("Press ENTER to continue...")
+
+def server_menu(client_socket):
+    print("\n--- SERVER MENU ---")
+    print("This feature is still under development.")
+    input("Press ENTER to continue...")
+
+def account_menu(client_socket):
+    print("\n--- ACCOUNT MENU ---")
+    print("This feature is still under development.")
+    input("Press ENTER to continue...")
+
+def balance_menu(client_socket):
+    print("\n--- BALANCE MENU ---")
+    print("This feature is still under development.")
+    input("Press ENTER to continue...")
+
+def wallet_menu(client_socket):
+    print("\n--- WALLET MENU ---")
+    print("This feature is still under development.")
+    input("Press ENTER to continue...")
+
+def airdrop_menu(client_socket):
+    print("\n--- AIRDROP MENU ---")
+    print("This feature is still under development.")
+    input("Press ENTER to continue...")
 
 def mine_menu(client_socket):
     while True:
