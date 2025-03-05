@@ -6,7 +6,7 @@ import shutil
 import time
 
 def calculate_file_hash(filename):
-    """Dosyanın hash'ini hesapla"""
+    """Calculate the hash of a file"""
     if not os.path.exists(filename):
         return None
     
@@ -21,17 +21,17 @@ def safe_update_client():
         host = '192.168.1.106'
         port = 5555
 
-        # Güncelleme için ayrı bir soket oluştur
+        # Create a separate socket for updates
         update_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         update_socket.connect((host, port))
 
-        # Güncelleme isteğini belirt
+        # Send update request
         update_socket.send('GET_UPDATE'.encode('utf-8'))
 
-        # Geçerli client.py'nin hash'ini al
+        # Get current client.py hash
         old_hash = calculate_file_hash('client.py')
 
-        # Yeni client dosyasını geçici olarak kaydet
+        # Save the new client file temporarily
         with open('client_new.py', 'wb') as file:
             while True:
                 data = update_socket.recv(1024)
@@ -41,61 +41,61 @@ def safe_update_client():
 
         update_socket.close()
 
-        # Yeni dosyanın hash'ini hesapla
+        # Calculate new file hash
         new_hash = calculate_file_hash('client_new.py')
 
-        # Eğer hash'ler aynıysa güncelleme gereksiz, dosyayı sil
+        # If hashes match, update is unnecessary, delete the file
         if old_hash == new_hash:
-            os.remove('client_new.py')  # Gereksiz dosyayı sil
-            print("✅ Client zaten güncel.")
+            os.remove('client_new.py')
+            print("✅ Client is already up to date.")
             return False
 
-        # Önceki güncellemelerden kalan client_old.py varsa sil
+        # Remove previous update backup if exists
         if os.path.exists('client_old.py'):
             os.remove('client_old.py')
 
-        # Eski client.py'yi yedekle
+        # Backup the old client.py
         if os.path.exists('client.py'):
             shutil.move('client.py', 'client_old.py')
 
-        # Yeni dosyayı client.py olarak kaydet
+        # Replace with the new client.py
         shutil.move('client_new.py', 'client.py')
 
-        print("✅ Client başarıyla güncellendi!")
-        return True  # Güncelleme yapıldı
+        print("✅ Client successfully updated!")
+        return True  # Update performed
 
     except Exception as e:
-        print(f"❌ Güncelleme hatası: {e}")
-        # Yedeklenen dosyayı geri yükle
+        print(f"❌ Update error: {e}")
+        # Restore backup if update fails
         if os.path.exists('client_old.py'):
             shutil.move('client_old.py', 'client.py')
-        return False  # Güncelleme başarısız
+        return False
 
 def transfer_menu(client_socket):
     while True:
-        print("\n--- TRANSFER MENÜSÜ ---")
-        print("1. Test Transfer İşlemi")
-        print("2. Geri Dön")
+        print("\n--- TRANSFER MENU ---")
+        print("1. Test Transfer")
+        print("2. Go Back")
         
-        secim = input("Seçiminizi yapın: ")
+        choice = input("Enter your choice: ")
         
-        if secim == '1':
-            print("\n🔄 Transfer işlemi test aşamasında...")
-            alici = input("Alıcı adresini girin: ")
-            miktar = input("Transfer miktarını girin: ")
+        if choice == '1':
+            print("\n🔄 Transfer process is under testing...")
+            recipient = input("Enter recipient address: ")
+            amount = input("Enter transfer amount: ")
             
-            # Basit bir test mesajı gönderme
-            transfer_mesaji = f"TRANSFER|{alici}|{miktar}"
-            client_socket.send(transfer_mesaji.encode('utf-8'))
+            # Send a simple test message
+            transfer_message = f"TRANSFER|{recipient}|{amount}"
+            client_socket.send(transfer_message.encode('utf-8'))
             
-            print(f"✉️ Transfer talebi gönderildi: {transfer_mesaji}")
-            input("Devam etmek için ENTER'a basın...")
+            print(f"✉️ Transfer request sent: {transfer_message}")
+            input("Press ENTER to continue...")
         
-        elif secim == '2':
+        elif choice == '2':
             return
         
         else:
-            print("Geçersiz seçim. Lütfen tekrar deneyin.")
+            print("Invalid choice. Please try again.")
 
 def start_client():
     host = '192.168.1.106'
@@ -105,94 +105,94 @@ def start_client():
         try:
             client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             client_socket.connect((host, port))
-            print(f"✅ Sunucuya bağlandınız: {host}:{port}")
+            print(f"✅ Connected to server: {host}:{port}")
 
-            # Bağlantı kurulduktan sonra, sunucunun ilk recv() çağrısına cevap verebilmek için bir "handshake" mesajı gönderiyoruz.
+            # Send handshake message
             client_socket.send("HELLO".encode('utf-8'))
-            
-            # Sunucunun gönderdiği ilk mesajı alıyoruz (protokol mesajı).
+
+            # Receive update status from the server
             update_status = client_socket.recv(1024).decode('utf-8')
             if update_status != "UPDATE_NOT_NEEDED":
-                print("Güncelleme mesajı:", update_status)
-            break  # Bağlantı başarılı olduğunda döngüden çık
+                print("Update message:", update_status)
+            break
 
         except ConnectionRefusedError:
-            print("❌ Sunucu şu anda kapalı, lütfen daha sonra tekrar deneyiniz.")
-            time.sleep(5)  # 5 saniye bekleyip tekrar dene
+            print("❌ Server is currently offline, please try again later.")
+            time.sleep(5)
         except Exception as e:
-            print(f"❌ Hata oluştu: {e}")
+            print(f"❌ Error occurred: {e}")
             time.sleep(5)
 
-    # Bağlantıyı sürekli kontrol eden döngü
+    # Continuous connection loop
     try:
         while True:
-            print("\n--- ANA MENÜ ---")
-            print("1. Mesaj Gönder")
-            print("2. Madencilik")
+            print("\n--- MAIN MENU ---")
+            print("1. Send Message")
+            print("2. Mining")
             print("3. Transfer")
-            print("4. Çıkış")
+            print("4. Exit")
 
-            secim = input("Seçiminizi yapın: ")
+            choice = input("Enter your choice: ")
 
-            if secim == '1':
+            if choice == '1':
                 while True:
-                    message = input("Mesaj gönder (çıkış için 'back'): ")
+                    message = input("Enter message (type 'back' to exit): ")
                     if message.lower() == 'back':
                         break
                     client_socket.send(message.encode('utf-8'))
-                    print(f"Mesaj gönderildi: {message}")
+                    print(f"Message sent: {message}")
 
-            elif secim == '2':
+            elif choice == '2':
                 mine_menu(client_socket)
 
-            elif secim == '3':
+            elif choice == '3':
                 transfer_menu(client_socket)
 
-            elif secim == '4':
+            elif choice == '4':
                 break
 
             else:
-                print("Geçersiz seçim. Lütfen tekrar deneyin.")
+                print("Invalid choice. Please try again.")
 
-            # Bağlantının hâlâ aktif olduğunu kontrol etmek için PING gönderiyoruz.
+            # Check if the connection is still active
             client_socket.send(b'PING')
             time.sleep(2)
 
     except (ConnectionResetError, BrokenPipeError):
-        print("❌ Sunucu bağlantısı kesildi! Sunucu şu an kapalı bulunmakta, lütfen sonra tekrar deneyiniz.")
+        print("❌ Server connection lost! Please try again later.")
         time.sleep(5)
-        start_client()  # Sunucu yeniden açılınca otomatik bağlan
+        start_client()
 
     finally:
         client_socket.close()
 
 def mine_menu(client_socket):
     while True:
-        print("\n--- MADENCİLİK MENÜSÜ ---")
-        print("1. Mine İşlemi Başlat")
-        print("2. Geri Dön")
+        print("\n--- MINING MENU ---")
+        print("1. Start Mining")
+        print("2. Go Back")
         
-        secim = input("Seçiminizi yapın: ")
+        choice = input("Enter your choice: ")
         
-        if secim == '1':
-            print("\n🚧 Madencilik işlemi henüz geliştirilme aşamasında.")
-            print("Bu bir demo ekranıdır. Gerçek madencilik işlemleri yapılmamaktadır.")
-            input("Devam etmek için ENTER'a basın...")
+        if choice == '1':
+            print("\n🚧 Mining is under development.")
+            print("This is a demo screen. Real mining operations are not performed yet.")
+            input("Press ENTER to continue...")
         
-        elif secim == '2':
+        elif choice == '2':
             return
         
         else:
-            print("Geçersiz seçim. Lütfen tekrar deneyin.")
+            print("Invalid choice. Please try again.")
 
-# Güncelleme kontrolü
+# Check for updates
 if __name__ == "__main__":
-    updated = safe_update_client()  # Güncelleme olup olmadığını kontrol et
+    updated = safe_update_client()
 
     if updated:
-        print("🔄 Güncelleme tamamlandı, istemci yeniden başlatılıyor...\n")
+        print("🔄 Update completed, restarting client...\n")
         python = sys.executable
         os.execl(python, python, *sys.argv)
 
-    print("🚀 Client başlatılıyor...\n")
+    print("🚀 Starting client...\n")
     start_client()
