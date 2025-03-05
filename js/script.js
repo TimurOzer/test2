@@ -13,10 +13,14 @@ async function loadBlocks() {
     genesisElement.classList.add('block', 'genesis');
     genesisElement.innerHTML = `
         <h2>Genesis Blok</h2>
-        <p><strong>Hash:</strong> ${genesisBlock.hash}</p>
+        <p><strong>Token Adresi:</strong> ${genesisBlock.token_address}</p>
+        <p><strong>Max Arz:</strong> ${genesisBlock.max_supply}</p>
+        <p><strong>Zaman:</strong> ${new Date(genesisBlock.timestamp * 1000).toLocaleString()}</p>
+        <p><strong>Önceki Hash 1:</strong> ${genesisBlock.prev_hash_1}</p>
+        <p><strong>Önceki Hash 2:</strong> ${genesisBlock.prev_hash_2}</p>
+        <p><strong>Nonce:</strong> ${genesisBlock.nonce}</p>
+        <p><strong>Blok Hash:</strong> ${genesisBlock.block_hash}</p>
         <p><strong>Security Hash:</strong> ${genesisBlock.security_hash}</p>
-        <p><strong>Zaman:</strong> ${genesisBlock.timestamp}</p>
-        <p><strong>Adres:</strong> ${genesisBlock.address}</p>
     `;
     container.appendChild(genesisElement);
 
@@ -26,11 +30,12 @@ async function loadBlocks() {
         blockElement.classList.add('block');
         blockElement.innerHTML = `
             <h3>Blok #${block.index}</h3>
-            <p><strong>Hash:</strong> ${block.hash}</p>
+            <p><strong>Hash:</strong> ${block.block_hash}</p>
             <p><strong>Security Hash:</strong> ${block.security_hash}</p>
-            <p><strong>Önceki Hash:</strong> ${block.previous_hash}</p>
-            <p><strong>Zaman:</strong> ${block.timestamp}</p>
-            <p><strong>İşlemler:</strong> ${block.transactions.length} adet</p>
+            <p><strong>Önceki Hash 1:</strong> ${block.prev_hash_1}</p>
+            <p><strong>Önceki Hash 2:</strong> ${block.prev_hash_2}</p>
+            <p><strong>Zaman:</strong> ${new Date(block.timestamp * 1000).toLocaleString()}</p>
+            <p><strong>Nonce:</strong> ${block.nonce}</p>
         `;
         container.appendChild(blockElement);
     });
