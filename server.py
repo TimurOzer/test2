@@ -2,27 +2,48 @@ import socket
 import threading
 import os
 import json
-from genesis_block import GenesisBlock  # Genesis Block sınıfını içe aktar
+from genesis_block import GenesisBlock, TOKEN_ADDRESS, MAX_SUPPLY  # Genesis Block sınıfını ve sabitleri içe aktar
 
 GENESIS_BLOCK_FILE = "genesis_block.json"
 
 def create_genesis_block():
-    """Eğer genesis_block.json yoksa, yeni bir Genesis Block oluşturur."""
+    """Eğer genesis_block.json yoksa veya geçersizse, yeni bir Genesis Block oluşturur."""
     if not os.path.exists(GENESIS_BLOCK_FILE):
         print("🔧 Genesis Block bulunamadı, oluşturuluyor...")
-        TOKEN_ADDRESS = "bklvdc38569a110702c2fed1164021f0539df178"
-        MAX_SUPPLY = 100_000_000
-
         genesis_block = GenesisBlock(TOKEN_ADDRESS, MAX_SUPPLY)
         genesis_block.mine_block()
 
         # Genesis bloğunu kaydet
-        with open(GENESIS_BLOCK_FILE, "w") as f:
-            json.dump(genesis_block.to_dict(), f, indent=4)
-
-        print("✅ Genesis Block başarıyla oluşturuldu ve kaydedildi!")
+        try:
+            with open(GENESIS_BLOCK_FILE, "w") as f:
+                json.dump(genesis_block.to_dict(), f, indent=4)
+            print("✅ Genesis Block başarıyla oluşturuldu ve kaydedildi!")
+        except Exception as e:
+            print(f"❌ Genesis Block kaydedilirken hata oluştu: {e}")
     else:
-        print("📜 Genesis Block zaten mevcut, yeniden oluşturulmadı.")
+        try:
+            with open(GENESIS_BLOCK_FILE, "r") as f:
+                genesis_data = json.load(f)
+                # Eğer dosya boş veya geçersizse, yeniden oluştur
+                if not genesis_data:
+                    raise ValueError("Dosya boş veya geçersiz JSON içeriyor.")
+                
+                # Dosyadan okunan verileri kullanarak GenesisBlock nesnesi oluştur
+                genesis_block = GenesisBlock.from_dict(genesis_data)
+                print("📜 Genesis Block zaten mevcut, yeniden oluşturulmadı.")
+                print(f"🔹 Mevcut Block Hash: {genesis_block.block_hash}")
+        except Exception as e:
+            print(f"❌ Genesis Block okunurken hata oluştu: {e}")
+            print("🔧 Genesis Block geçersiz, yeniden oluşturuluyor...")
+            genesis_block = GenesisBlock(TOKEN_ADDRESS, MAX_SUPPLY)
+            genesis_block.mine_block()
+
+            try:
+                with open(GENESIS_BLOCK_FILE, "w") as f:
+                    json.dump(genesis_block.to_dict(), f, indent=4)
+                print("✅ Genesis Block başarıyla oluşturuldu ve kaydedildi!")
+            except Exception as e:
+                print(f"❌ Genesis Block kaydedilirken hata oluştu: {e}")
 
 def handle_client(client_socket, client_address):
     print(f"🔗 {client_address} bağlandı.")
@@ -64,8 +85,8 @@ def handle_client(client_socket, client_address):
         client_socket.close()
 
 def start_server():
-    host = '192.168.1.106'
-    port = 5555
+    host = '192.168.1.106'  # Sunucunun IP adresi
+    port = 5555  # Sunucunun portu
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind((host, port))

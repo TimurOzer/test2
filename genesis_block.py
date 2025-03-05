@@ -8,15 +8,15 @@ MAX_SUPPLY = 100_000_000  # Maksimum 100 milyon arz
 DIFFICULTY = 4  # Proof of Work için zorluk seviyesi (ön eki '0000' olan bir hash bulunacak)
 
 class GenesisBlock:
-    def __init__(self, token_address, max_supply):
+    def __init__(self, token_address, max_supply, timestamp=None, prev_hash_1="0" * 64, prev_hash_2="0" * 64, nonce=0, block_hash=None, security_hash=None):
         self.token_address = token_address
         self.max_supply = max_supply
-        self.timestamp = time.time()
-        self.prev_hash_1 = "0" * 64  # İlk blok olduğu için önceki hash yok
-        self.prev_hash_2 = "0" * 64
-        self.nonce = 0  # Madencilik için sayacımız
-        self.block_hash = None
-        self.security_hash = None  # İkinci güvenlik hash'i olacak
+        self.timestamp = timestamp if timestamp is not None else time.time()
+        self.prev_hash_1 = prev_hash_1
+        self.prev_hash_2 = prev_hash_2
+        self.nonce = nonce
+        self.block_hash = block_hash
+        self.security_hash = security_hash
 
     def to_dict(self):
         """Genesis blok verilerini sözlük formatına çevirir."""
@@ -30,6 +30,20 @@ class GenesisBlock:
             "block_hash": self.block_hash,
             "security_hash": self.security_hash
         }
+
+    @classmethod
+    def from_dict(cls, data):
+        """Sözlük formatındaki verileri kullanarak GenesisBlock nesnesi oluşturur."""
+        return cls(
+            token_address=data["token_address"],
+            max_supply=data["max_supply"],
+            timestamp=data["timestamp"],
+            prev_hash_1=data["prev_hash_1"],
+            prev_hash_2=data["prev_hash_2"],
+            nonce=data["nonce"],
+            block_hash=data["block_hash"],
+            security_hash=data["security_hash"]
+        )
 
     def mine_block(self):
         """Proof of Work (PoW) madencilik işlemi ile uygun hash değerini bulur."""
@@ -52,14 +66,3 @@ class GenesisBlock:
                 print(f"⏳ Still mining... Nonce: {self.nonce}")
 
             self.nonce += 1
-
-# Genesis blok oluştur ve madenciliği yap
-genesis_block = GenesisBlock(TOKEN_ADDRESS, MAX_SUPPLY)
-genesis_block.mine_block()
-
-# Genesis bloğu JSON dosyasına kaydet
-with open("genesis_block.json", "w") as f:
-    json.dump(genesis_block.to_dict(), f, indent=4)
-
-print("📜 Genesis Block saved to 'genesis_block.json'")
-
