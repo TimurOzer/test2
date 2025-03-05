@@ -1,6 +1,28 @@
 import socket
 import threading
 import os
+import json
+from genesis_block import GenesisBlock  # Genesis Block sınıfını içe aktar
+
+GENESIS_BLOCK_FILE = "genesis_block.json"
+
+def create_genesis_block():
+    """Eğer genesis_block.json yoksa, yeni bir Genesis Block oluşturur."""
+    if not os.path.exists(GENESIS_BLOCK_FILE):
+        print("🔧 Genesis Block bulunamadı, oluşturuluyor...")
+        TOKEN_ADDRESS = "bklvdc38569a110702c2fed1164021f0539df178"
+        MAX_SUPPLY = 100_000_000
+
+        genesis_block = GenesisBlock(TOKEN_ADDRESS, MAX_SUPPLY)
+        genesis_block.mine_block()
+
+        # Genesis bloğunu kaydet
+        with open(GENESIS_BLOCK_FILE, "w") as f:
+            json.dump(genesis_block.to_dict(), f, indent=4)
+
+        print("✅ Genesis Block başarıyla oluşturuldu ve kaydedildi!")
+    else:
+        print("📜 Genesis Block zaten mevcut, yeniden oluşturulmadı.")
 
 def handle_client(client_socket, client_address):
     print(f"🔗 {client_address} bağlandı.")
@@ -50,6 +72,9 @@ def start_server():
     server_socket.listen(5)
 
     print(f"🌐 Sunucu {host}:{port} üzerinde çalışıyor...")
+
+    # Genesis Block'un ilk çalıştırmada oluşturulmasını sağla
+    create_genesis_block()
 
     while True:
         client_socket, client_address = server_socket.accept()
