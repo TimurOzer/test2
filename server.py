@@ -4,7 +4,14 @@ import os
 import json
 from genesis_block import GenesisBlock, TOKEN_ADDRESS, MAX_SUPPLY  # Genesis Block sınıfını ve sabitleri içe aktar
 
-GENESIS_BLOCK_FILE = "genesis_block.json"
+DATA_DIR = "data"  # Veri klasörü
+GENESIS_BLOCK_FILE = os.path.join(DATA_DIR, "genesis_block.json")  # Dosya yolu
+
+def ensure_data_dir():
+    """Eğer data klasörü yoksa, oluşturur."""
+    if not os.path.exists(DATA_DIR):
+        os.makedirs(DATA_DIR)
+        print(f"📁 '{DATA_DIR}' klasörü oluşturuldu.")
 
 def create_genesis_block():
     """Eğer genesis_block.json yoksa veya geçersizse, yeni bir Genesis Block oluşturur."""
@@ -93,6 +100,9 @@ def start_server():
     server_socket.listen(5)
 
     print(f"🌐 Sunucu {host}:{port} üzerinde çalışıyor...")
+
+    # Data klasörünün varlığını garanti altına al
+    ensure_data_dir()
 
     # Genesis Block'un ilk çalıştırmada oluşturulmasını sağla
     create_genesis_block()
