@@ -67,28 +67,88 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 function formatContent(data) {
     return Object.entries(data).map(([key, value]) => {
-        let displayValue = value;
-        const isHash = key.toLowerCase().includes('hash') || 
-                      key.toLowerCase().includes('merkleroot') || 
-                      key.toLowerCase().includes('signature');
+        const specialFields = {
+            hash: ['hash', 'merkleroot', 'signature', 'token_address', 'security_data'],
+            timestamp: ['timestamp', 'time', 'date'],
+            code: ['address', 'id', 'nonce']
+        };
 
-        if (isHash && typeof value === 'string' && value.length > 16) {
-            const shortHash = `${value.substring(0, 6)}...${value.substring(value.length - 4)}`;
-            return `
-                <div class="hash-container" onclick="navigator.clipboard.writeText('${value}')">
-                    <strong>${key}:</strong>
-                    <span class="hash-short" data-full="${value}">${shortHash}</span>
-                    <span class="hash-tooltip">Click to copy!</span>
-                </div>
-            `;
+        // Hash Benzeri Alanlar
+        if (specialFields.hash.some(f => key.toLowerCase().includes(f)) {
+            const formattedValue = typeof value === 'string' ? value : JSON.stringify(value);
+            return createSpecialField(key, formattedValue, 'hash');
         }
-        
+
+        // Timestamp Alanları
+        if (specialFields.timestamp.includes(key.toLowerCase())) {
+            return createTimestampField(value);
+        }
+
+        // Kod Benzeri Alanlar
+        if (specialFields.code.some(f => key.toLowerCase().includes(f))) {
+            return `<div class="code-snippet">${key}: <code>${value}</code></div>`;
+        }
+
+        // Obje ve Diğer Alanlar
         if (typeof value === 'object') {
-            return `<strong>${key}:</strong><pre>${JSON.stringify(value, null, 2)}</pre>`;
+            return `<div class="object-field"><strong>${key}:</strong><pre>${JSON.stringify(value, null, 2)}</pre></div>`;
         }
-        
-        return `<strong>${key}:</strong> ${value}`;
-    }).join('<br>');
+
+        return `<div class="regular-field"><strong>${key}:</strong> ${value}</div>`;
+    }).join('');
+}
+
+function createSpecialField(key, value, type) {
+    const isHex = /^[0-9a-fx]+$/i.test(value);
+    const shortValue = isHex ? `${value.substring(0, 6)}...${value.slice(-4)}` : value.substring(0, 12) + '...';
+    
+    return `
+        <div class="special-field ${type}" data-full="${value}" onclick="handleSpecialClick(event)">
+            <div class="field-header">
+                <span class="field-key">${key}:</span>
+                <span class="copy-indicator">📋</span>
+            </div>
+            <div class="field-value">${shortValue}</div>
+            <div class="full-value-overlay">
+                <div class="full-value-content">
+                    <span>${value}</span>
+                    <button class="copy-button" data-value="${value}">Copy Full Value</button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function createTimestampField(timestamp) {
+    const date = new Date(timestamp * 1000);
+    const options = {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        fractionalSecondDigits: 3
+    };
+    
+    return `
+        <div class="timestamp-field" data-raw="${timestamp}">
+            <div class="human-time">${date.toLocaleString('en-US', options)}</div>
+            <div class="raw-time">Unix: ${timestamp}</div>
+        </div>
+    `;
+}
+
+// Yeni click handler
+function handleSpecialClick(event) {
+    const field = event.currentTarget;
+    const fullValue = field.dataset.full;
+    
+    navigator.clipboard.writeText(fullValue).then(() => {
+        showCopyNotification('✓ Value copied to clipboard!');
+    }).catch(err => {
+        showCopyNotification('⚠️ Failed to copy!');
+    });
 }
 
     // Search functionality
