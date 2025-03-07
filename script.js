@@ -27,7 +27,6 @@ document.addEventListener("DOMContentLoaded", async function() {
             }
         }
 
-        let lastBetaHash = null;
         let alphaIndex = 1;
         let securityIndex = 1;
         let betaIndex = 1;
@@ -41,7 +40,6 @@ document.addEventListener("DOMContentLoaded", async function() {
         if (blocks["genesis_block"]) {
             const genesisBlock = createBlock("Genesis Block", blocks["genesis_block"]);
             currentRow.appendChild(genesisBlock);
-            lastBetaHash = blocks["genesis_block"].block_hash;
         }
 
         // Alpha ve Security bloklarını sırasıyla ekle
@@ -67,7 +65,6 @@ document.addEventListener("DOMContentLoaded", async function() {
 
             if (blocks[`beta${betaIndex}`]) {
                 betaRow.appendChild(createBlock(`Beta ${betaIndex}`, blocks[`beta${betaIndex}`]));
-                lastBetaHash = blocks[`beta${betaIndex}`].block_hash;
                 betaIndex++;
             }
         }
