@@ -65,14 +65,31 @@ document.addEventListener("DOMContentLoaded", async function () {
         return block;
     }
 
-    function formatContent(data) {
-        return Object.entries(data).map(([key, value]) => {
-            if (typeof value === 'object') {
-                return `<strong>${key}:</strong><pre>${JSON.stringify(value, null, 2)}</pre>`;
-            }
-            return `<strong>${key}:</strong> ${value}`;
-        }).join('<br>');
-    }
+function formatContent(data) {
+    return Object.entries(data).map(([key, value]) => {
+        let displayValue = value;
+        const isHash = key.toLowerCase().includes('hash') || 
+                      key.toLowerCase().includes('merkleroot') || 
+                      key.toLowerCase().includes('signature');
+
+        if (isHash && typeof value === 'string' && value.length > 16) {
+            const shortHash = `${value.substring(0, 6)}...${value.substring(value.length - 4)}`;
+            return `
+                <div class="hash-container" onclick="navigator.clipboard.writeText('${value}')">
+                    <strong>${key}:</strong>
+                    <span class="hash-short" data-full="${value}">${shortHash}</span>
+                    <span class="hash-tooltip">Click to copy!</span>
+                </div>
+            `;
+        }
+        
+        if (typeof value === 'object') {
+            return `<strong>${key}:</strong><pre>${JSON.stringify(value, null, 2)}</pre>`;
+        }
+        
+        return `<strong>${key}:</strong> ${value}`;
+    }).join('<br>');
+}
 
     // Search functionality
     searchButton.addEventListener('click', async () => {
