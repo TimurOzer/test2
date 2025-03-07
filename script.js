@@ -102,21 +102,27 @@ function createSpecialField(key, value, type) {
     const isHex = /^[0-9a-fx]+$/i.test(value);
     const shortValue = isHex ? `${value.substring(0, 6)}...${value.slice(-4)}` : value.substring(0, 12) + '...';
     
-    return `
-        <div class="special-field ${type}" data-full="${value}" onclick="handleSpecialClick(event)">
-            <div class="field-header">
-                <span class="field-key">${key}:</span>
-                <span class="copy-indicator">📋</span>
-            </div>
-            <div class="field-value">${shortValue}</div>
-            <div class="full-value-overlay">
-                <div class="full-value-content">
-                    <span>${value}</span>
-                    <button class="copy-button" data-value="${value}">Copy Full Value</button>
-                </div>
+    const field = document.createElement('div');
+    field.className = `special-field ${type}`;
+    field.dataset.full = value;
+    
+    field.innerHTML = `
+        <div class="field-header">
+            <span class="field-key">${key}:</span>
+            <span class="copy-indicator">📋</span>
+        </div>
+        <div class="field-value">${shortValue}</div>
+        <div class="full-value-overlay">
+            <div class="full-value-content">
+                <span>${value}</span>
+                <button class="copy-button">Copy Full Value</button>
             </div>
         </div>
     `;
+    
+    // Event listener ekle
+    field.addEventListener('click', handleSpecialClick);
+    return field;
 }
 
 function createTimestampField(timestamp) {
@@ -139,7 +145,7 @@ function createTimestampField(timestamp) {
     `;
 }
 
-// Yeni click handler
+// Global scope'ta tanımla
 function handleSpecialClick(event) {
     const field = event.currentTarget;
     const fullValue = field.dataset.full;
@@ -161,15 +167,3 @@ function showCopyNotification(message) {
         notification.remove();
     }, 2000);
 }
-    // Search functionality
-    searchButton.addEventListener('click', async () => {
-        const searchTerm = blockInput.value.trim();
-        if (!searchTerm) return;
-
-        // Implement search logic here
-        alert('Search functionality coming soon!');
-    });
-
-    // Initial load
-    visualizeBlockchain();
-});
