@@ -1,110 +1,47 @@
-document.addEventListener("DOMContentLoaded", async function () {
-    const container = document.getElementById("blockchain-container");
+// Sample Blockchain data (This will be fetched in a real app)
+const blockData = {
+    "genesis_block": {
+        "hash": "0x1234567890abcdef",
+        "timestamp": "2025-03-07T12:34:56Z",
+        "transactions": 12,
+        "miner": "0xabc123",
+        "blockReward": 5
+    },
+    "alpha1": {
+        "hash": "0xabcdef1234567890",
+        "timestamp": "2025-03-07T13:00:00Z",
+        "transactions": 8,
+        "miner": "0xdef456",
+        "blockReward": 5
+    },
+    // Add more blocks as needed
+};
 
-    // JSON dosyalarını çekmek için yardımcı fonksiyon
-    async function fetchJSON(file) {
-        try {
-            const response = await fetch(`data/${file}`);
-            if (!response.ok) {  // HTTP hata kontrolü
-                throw new Error(`HTTP Error: ${response.status}`);
-            }
-            return await response.json();
-        } catch (error) {
-            console.error(`Error fetching ${file}:`, error);
-            return null;
-        }
+// Function to display block data
+function displayBlockDetails(block) {
+    const blockDetailsElement = document.getElementById("block-details");
+    
+    if (block) {
+        blockDetailsElement.innerHTML = `
+            <h2>Block Details: ${block.hash}</h2>
+            <p><strong>Timestamp:</strong> ${block.timestamp}</p>
+            <p><strong>Transactions:</strong> ${block.transactions}</p>
+            <p><strong>Miner:</strong> ${block.miner}</p>
+            <p><strong>Block Reward:</strong> ${block.blockReward} ETH</p>
+        `;
+    } else {
+        blockDetailsElement.innerHTML = `<p>Block not found. Please check the hash/address and try again.</p>`;
     }
+}
 
-    // Blockchain verilerini yükle ve görselleştir
-    async function loadBlockchainData() {
-        container.innerHTML = ""; // Önceki verileri temizle
-
-        // Tüm blokları al
-        const files = ["genesis_block.json", "alpha1.json", "security1.json", "beta1.json", "alpha2.json", "security2.json", "beta2.json"];
-        let blocks = {};
-
-        for (let file of files) {
-            let data = await fetchJSON(file);
-            if (data) {
-                blocks[file.replace(".json", "")] = data;
-            }
-        }
-
-        let alphaIndex = 1;
-        let securityIndex = 1;
-        let betaIndex = 1;
-
-        // Blokları dikey olarak çiz
-        let currentRow = document.createElement("div");
-        currentRow.className = "row";
-        container.appendChild(currentRow);
-
-        // Genesis bloğu
-        if (blocks["genesis_block"]) {
-            const genesisBlock = createBlock("Genesis Block", blocks["genesis_block"]);
-            currentRow.appendChild(genesisBlock);
-        }
-
-        // Alpha ve Security bloklarını sırasıyla ekle
-        while (blocks[`alpha${alphaIndex}`] || blocks[`security${securityIndex}`]) {
-            let newRow = document.createElement("div");
-            newRow.className = "row";
-            container.appendChild(newRow);
-
-            if (blocks[`alpha${alphaIndex}`]) {
-                newRow.appendChild(createBlock(`Alpha ${alphaIndex}`, blocks[`alpha${alphaIndex}`]));
-                alphaIndex++;
-            }
-
-            if (blocks[`security${securityIndex}`]) {
-                newRow.appendChild(createBlock(`Security ${securityIndex}`, blocks[`security${securityIndex}`]));
-                securityIndex++;
-            }
-
-            // Beta ekle
-            let betaRow = document.createElement("div");
-            betaRow.className = "row";
-            container.appendChild(betaRow);
-
-            if (blocks[`beta${betaIndex}`]) {
-                betaRow.appendChild(createBlock(`Beta ${betaIndex}`, blocks[`beta${betaIndex}`]));
-                betaIndex++;
-            }
-        }
+// Handle search button click
+document.getElementById("search-button").addEventListener("click", () => {
+    const blockHash = document.getElementById("block-input").value.toLowerCase();
+    
+    // In a real app, you would fetch block data from a blockchain API based on the entered hash
+    if (blockData[blockHash]) {
+        displayBlockDetails(blockData[blockHash]);
+    } else {
+        displayBlockDetails(null);
     }
-
-    function createBlock(title, data) {
-        const block = document.createElement("div");
-        block.className = "block";
-
-        // Başlık
-        const blockHeader = document.createElement("div");
-        blockHeader.className = "block-header";
-        blockHeader.innerText = title;
-        block.appendChild(blockHeader);
-
-        // İçerik
-        const blockContent = document.createElement("div");
-        blockContent.className = "block-content";
-        blockContent.innerHTML = formatBlockContent(data);
-        block.appendChild(blockContent);
-
-        return block;
-    }
-
-    // JSON içeriğini daha okunabilir hale getir
-    function formatBlockContent(data) {
-        let content = "";
-        
-        for (let key in data) {
-            if (typeof data[key] === "object") {
-                content += `<strong>${key}</strong>:<pre>${JSON.stringify(data[key], null, 2)}</pre><br>`;
-            } else {
-                content += `<strong>${key}</strong>: ${data[key]}<br>`;
-            }
-        }
-        return content;
-    }
-
-    loadBlockchainData();
 });

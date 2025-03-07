@@ -3,24 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baklava Blockchain Explorer</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Blockchain Explorer</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header>
-        <h1>Baklava Blockchain Explorer</h1>
-        <p>Blockchain Blokları ve İşlemleri Görselleştir</p>
-    </header>
+    <div class="container">
+        <header>
+            <h1>Blockchain Explorer</h1>
+            <input type="text" id="block-input" placeholder="Block Hash or Address">
+            <button id="search-button">Search</button>
+        </header>
 
-    <main>
-        <section id="blockchain-container">
-            <!-- Blockchain blokları buraya yüklenecek -->
-        </section>
-    </main>
-
-    <footer>
-        <p>&copy; 2025 Baklava Blockchain Explorer</p>
-    </footer>
+        <main id="main-content">
+            <div id="block-details" class="block-detail">
+                <!-- Block data will be displayed here -->
+            </div>
+        </main>
+    </div>
 
     <script src="script.js"></script>
 </body>
