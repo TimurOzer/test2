@@ -137,12 +137,23 @@ document.addEventListener("DOMContentLoaded", async function () {
         const searchTerm = blockInput.value.trim().toLowerCase();
         if (!searchTerm) return;
 
-        // Sayfanın ilgili bloğuna kaydırma işlemi
-        const blockElement = document.querySelector(`.${searchTerm}`);
-        if (blockElement) {
-            blockElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } else {
-            alert('No block found matching the search term.');
+        // Hash'e ait olan bloğu bul
+        const blocks = document.querySelectorAll('.block'); // Tüm blokları al
+        let found = false;
+
+        blocks.forEach(block => {
+            const hashFields = block.querySelectorAll('.copy-field');
+            hashFields.forEach(field => {
+                const fieldData = field.dataset.copy.toLowerCase();
+                if (fieldData.includes(searchTerm)) {
+                    block.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    found = true;
+                }
+            });
+        });
+
+        if (!found) {
+            alert('No block found matching the hash.');
         }
     });
 
