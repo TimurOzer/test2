@@ -11,13 +11,20 @@ body {
     position: relative;
 }
 
+.row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+}
+
 .block {
     display: inline-block;
     background-color: #fff;
     border: 2px solid #333;
     padding: 10px;
-    margin: 10px;
-    width: 200px;
+    width: 150px;
     text-align: center;
     position: relative;
     box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
@@ -25,23 +32,25 @@ body {
 
 .block::after {
     content: "";
-    width: 2px;
-    height: 40px;
-    background-color: #333;
-    display: block;
     position: absolute;
-    left: 50%;
+    width: 2px;
+    height: 30px;
+    background-color: #333;
     top: 100%;
+    left: 50%;
     transform: translateX(-50%);
 }
 
-.block:last-child::after {
+.row:last-child .block::after {
     display: none;
 }
 
-.row {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
+.connector {
+    position: absolute;
+    width: 2px;
+    height: 30px;
+    background-color: #333;
+    left: 50%;
+    top: 100%;
+    transform: translateX(-50%);
 }

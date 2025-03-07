@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", async function() {
     const container = document.getElementById("blockchain-container");
 
-    // JSON dosyalarını çekmek için yardımcı fonksiyon
     async function fetchJSON(file) {
         try {
             const response = await fetch(`data/${file}`);
@@ -12,14 +11,12 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
-    // Blockchain verilerini yükle ve görselleştir
     async function loadBlockchainData() {
-        container.innerHTML = ""; // Önceki verileri temizle
+        container.innerHTML = "";
 
-        // Tüm blokları al
+        // JSON dosyalarını oku
         const files = ["genesis_block.json", "alpha1.json", "security1.json", "beta1.json", "alpha2.json", "security2.json", "beta2.json"];
         let blocks = {};
-
         for (let file of files) {
             let data = await fetchJSON(file);
             if (data) {
@@ -27,50 +24,50 @@ document.addEventListener("DOMContentLoaded", async function() {
             }
         }
 
-        // Blokları sırayla çiz
-        let currentRow = document.createElement("div");
-        currentRow.className = "row";
-        container.appendChild(currentRow);
+        let lastBetaHash = null;
+        let alphaIndex = 1;
+        let securityIndex = 1;
+        let betaIndex = 1;
 
-        // Genesis bloğunu oluştur
+        // 1️⃣ Genesis bloğu
+        let genesisRow = document.createElement("div");
+        genesisRow.className = "row";
+        container.appendChild(genesisRow);
+
         if (blocks["genesis_block"]) {
-            const genesisBlock = createBlock("Genesis Block", blocks["genesis_block"]);
-            currentRow.appendChild(genesisBlock);
+            let genesisBlock = createBlock("Genesis Block", blocks["genesis_block"]);
+            genesisRow.appendChild(genesisBlock);
+            lastBetaHash = blocks["genesis_block"].block_hash;
         }
 
-        // Alpha ve Security'leri sırayla ekle
-        let currentAlpha = 1;
-        let currentSecurity = 1;
-        let currentBeta = 1;
+        // 2️⃣ Zinciri oluştur
+        while (blocks[`alpha${alphaIndex}`] || blocks[`security${securityIndex}`]) {
+            let alphaRow = document.createElement("div");
+            alphaRow.className = "row";
+            container.appendChild(alphaRow);
 
-        while (blocks[`alpha${currentAlpha}`] || blocks[`security${currentSecurity}`]) {
-            let newRow = document.createElement("div");
-            newRow.className = "row";
-            container.appendChild(newRow);
-
-            if (blocks[`alpha${currentAlpha}`]) {
-                newRow.appendChild(createBlock(`Alpha ${currentAlpha}`, blocks[`alpha${currentAlpha}`]));
-                currentAlpha++;
+            if (blocks[`alpha${alphaIndex}`]) {
+                alphaRow.appendChild(createBlock(`Alpha ${alphaIndex}`, blocks[`alpha${alphaIndex}`]));
+                alphaIndex++;
             }
 
-            if (blocks[`security${currentSecurity}`]) {
-                newRow.appendChild(createBlock(`Security ${currentSecurity}`, blocks[`security${currentSecurity}`]));
-                currentSecurity++;
+            if (blocks[`security${securityIndex}`]) {
+                alphaRow.appendChild(createBlock(`Security ${securityIndex}`, blocks[`security${securityIndex}`]));
+                securityIndex++;
             }
 
-            // Beta ekle
             let betaRow = document.createElement("div");
             betaRow.className = "row";
             container.appendChild(betaRow);
 
-            if (blocks[`beta${currentBeta}`]) {
-                betaRow.appendChild(createBlock(`Beta ${currentBeta}`, blocks[`beta${currentBeta}`]));
-                currentBeta++;
+            if (blocks[`beta${betaIndex}`]) {
+                betaRow.appendChild(createBlock(`Beta ${betaIndex}`, blocks[`beta${betaIndex}`]));
+                lastBetaHash = blocks[`beta${betaIndex}`].block_hash;
+                betaIndex++;
             }
         }
     }
 
-    // Blokları oluşturan fonksiyon
     function createBlock(title, data) {
         const block = document.createElement("div");
         block.className = "block";
@@ -79,7 +76,4 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
 
     loadBlockchainData();
-
-    // Güncellemeyi otomatik yapmak için:
-    // setInterval(loadBlockchainData, 5000);
 });
