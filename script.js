@@ -46,55 +46,61 @@ document.addEventListener("DOMContentLoaded", async function () {
             beta: await Promise.all([1, 2].map(i => fetchBlockData(`beta${i}.json`)))
         };
 
-        // Blokları oluştur
-        createBlock('genesis', blocks.genesis);
-        [0, 1].forEach(i => {
-            createBlockRow([
-                blocks.alpha[i],
-                blocks.security[i],
-                blocks.beta[i]
-            ]);
-        });
+        // Genesis bloğu
+        if (blocks.genesis) {
+            createBlockRow([blocks.genesis], 'genesis-row');
+        }
+
+        // Alpha, Security ve Beta blokları
+        for (let i = 0; i < 2; i++) {
+            createBlockRow([blocks.alpha[i], `alpha-row-${i + 1}`);
+            createBlockRow([blocks.security[i]], `security-row-${i + 1}`);
+            createBlockRow([blocks.beta[i]], `beta-row-${i + 1}`);
+        }
     }
 
-    function createBlock(type, data) {
-        if (!data) return;
-        
-        const block = document.createElement('div');
-        block.className = `block ${type}`;
-        block.innerHTML = `
-            <div class="block-header">${data.blockName || 'Baklava Block'}</div>
-            <div class="block-content">${formatContent(data)}</div>
-        `;
-        container.appendChild(block);
-    }
-
-    function createBlockRow(blocks) {
+    // Blok satırı oluştur
+    function createBlockRow(blockData, rowClass) {
         const row = document.createElement('div');
-        row.className = 'block-row';
-        blocks.forEach(block => {
-            if (block) {
-                const div = document.createElement('div');
-                div.className = 'block';
-                div.innerHTML = `
-                    <div class="block-header">${block.blockName}</div>
-                    <div class="block-content">${formatContent(block)}</div>
-                `;
-                row.appendChild(div);
+        row.className = `block-row ${rowClass}`;
+        
+        blockData.forEach(data => {
+            if (data) {
+                const block = createBlockElement(data);
+                row.appendChild(block);
             }
         });
+        
         container.appendChild(row);
+    }
+
+    // Blok elementi oluştur
+    function createBlockElement(data) {
+        const block = document.createElement('div');
+        block.className = 'block';
+        
+        const header = document.createElement('div');
+        header.className = 'block-header';
+        header.textContent = data.blockName || 'Baklava Block';
+        
+        const content = document.createElement('div');
+        content.className = 'block-content';
+        content.innerHTML = formatContent(data);
+
+        block.appendChild(header);
+        block.appendChild(content);
+        return block;
     }
 
     // İçerik formatlama
     function formatContent(data) {
         return Object.entries(data).map(([key, value]) => {
             // Hash ve adresler
-            if (['hash','token_address','security_data'].some(k => key.toLowerCase().includes(k))) {
+            if (['hash', 'token_address', 'security_data'].some(k => key.toLowerCase().includes(k))) {
                 return `
                     <div class="copy-field" data-copy="${value}">
                         <strong>${key}:</strong>
-                        <span class="short-value">${value.slice(0,6)}...${value.slice(-4)}</span>
+                        <span class="short-value">${value.slice(0, 6)}...${value.slice(-4)}</span>
                         <span class="copy-hint">Click to copy</span>
                     </div>
                 `;
