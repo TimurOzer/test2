@@ -1,3 +1,26 @@
+// Global scope'ta tanımla
+function handleSpecialClick(event) {
+    const field = event.currentTarget;
+    const fullValue = field.dataset.full;
+    
+    navigator.clipboard.writeText(fullValue).then(() => {
+        showCopyNotification('✓ Value copied to clipboard!');
+    }).catch(err => {
+        showCopyNotification('⚠️ Failed to copy!');
+    });
+}
+
+function showCopyNotification(message) {
+    const notification = document.createElement('div');
+    notification.className = 'copy-notification';
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 2000);
+}
+
 document.addEventListener("DOMContentLoaded", async function () {
     const container = document.getElementById("blockchain-container");
     const searchButton = document.getElementById("search-button");
@@ -65,45 +88,48 @@ document.addEventListener("DOMContentLoaded", async function () {
         return block;
     }
 
-function formatContent(data) {
-    return Object.entries(data).map(([key, value]) => {
-        const specialFields = {
-            hash: ['hash', 'merkleroot', 'signature', 'token_address', 'security_data'],
-            timestamp: ['timestamp', 'time', 'date'],
-            code: ['address', 'id', 'nonce']
-        };
+    function formatContent(data) {
+        return Object.entries(data).map(([key, value]) => {
+            const specialFields = {
+                hash: ['hash', 'merkleroot', 'signature', 'token_address', 'security_data'],
+                timestamp: ['timestamp', 'time', 'date'],
+                code: ['address', 'id', 'nonce']
+            };
 
-        // Hash Benzeri Alanlar
-        if (specialFields.hash.some(f => key.toLowerCase().includes(f))) {
-            const formattedValue = typeof value === 'string' ? value : JSON.stringify(value);
-            return createSpecialField(key, formattedValue, 'hash');
-        }
+            // Hash Benzeri Alanlar
+            if (specialFields.hash.some(f => key.toLowerCase().includes(f))) {
+                const formattedValue = typeof value === 'string' ? value : JSON.stringify(value);
+                return createSpecialField(key, formattedValue, 'hash');
+            }
 
-        // Timestamp Alanları
-        if (specialFields.timestamp.includes(key.toLowerCase())) {
-            return createTimestampField(value);
-        }
+            // Timestamp Alanları
+            if (specialFields.timestamp.includes(key.toLowerCase())) {
+                return createTimestampField(value);
+            }
 
-        // Kod Benzeri Alanlar
-        if (specialFields.code.some(f => key.toLowerCase().includes(f))) {
-            return `<div class="code-snippet">${key}: <code>${value}</code></div>`;
-        }
+            // Kod Benzeri Alanlar
+            if (specialFields.code.some(f => key.toLowerCase().includes(f))) {
+                return `<div class="code-snippet">${key}: <code>${value}</code></div>`;
+            }
 
-        // Obje ve Diğer Alanlar
-        if (typeof value === 'object') {
-            return `<div class="object-field"><strong>${key}:</strong><pre>${JSON.stringify(value, null, 2)}</pre></div>`;
-        }
+            // Obje ve Diğer Alanlar
+            if (typeof value === 'object') {
+                return `<div class="object-field"><strong>${key}:</strong><pre>${JSON.stringify(value, null, 2)}</pre></div>`;
+            }
 
-        return `<div class="regular-field"><strong>${key}:</strong> ${value}</div>`;
-    }).join('');
-}
+            return `<div class="regular-field"><strong>${key}:</strong> ${value}</div>`;
+        }).join('');
+    }
 
-function createSpecialField(key, value, type) {
-    const isHex = /^[0-9a-fx]+$/i.test(value);
-    const shortValue = isHex ? `${value.substring(0, 6)}...${value.slice(-4)}` : value.substring(0, 12) + '...';
-    
-    return `
-        <div class="special-field ${type}" data-full="${value}" onclick="handleSpecialClick(event)">
+    function createSpecialField(key, value, type) {
+        const isHex = /^[0-9a-fx]+$/i.test(value);
+        const shortValue = isHex ? `${value.substring(0, 6)}...${value.slice(-4)}` : value.substring(0, 12) + '...';
+        
+        const field = document.createElement('div');
+        field.className = `special-field ${type}`;
+        field.dataset.full = value;
+        
+        field.innerHTML = `
             <div class="field-header">
                 <span class="field-key">${key}:</span>
                 <span class="copy-indicator">📋</span>
@@ -115,51 +141,31 @@ function createSpecialField(key, value, type) {
                     <button class="copy-button">Copy Full Value</button>
                 </div>
             </div>
-        </div>
-    `;
-}
-
-function createTimestampField(timestamp) {
-    const date = new Date(timestamp * 1000);
-    const options = {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        fractionalSecondDigits: 3
-    };
-    
-    return `
-        <div class="timestamp-field" data-raw="${timestamp}">
-            <div class="human-time">${date.toLocaleString('en-US', options)}</div>
-            <div class="raw-time">Unix: ${timestamp}</div>
-        </div>
-    `;
-}
-
-    // Global scope'ta tanımla
-    function handleSpecialClick(event) {
-        const field = event.currentTarget;
-        const fullValue = field.dataset.full;
+        `;
         
-        navigator.clipboard.writeText(fullValue).then(() => {
-            showCopyNotification('✓ Value copied to clipboard!');
-        }).catch(err => {
-            showCopyNotification('⚠️ Failed to copy!');
-        });
+        // Event listener ekle
+        field.addEventListener('click', handleSpecialClick);
+        return field;
     }
 
-    function showCopyNotification(message) {
-        const notification = document.createElement('div');
-        notification.className = 'copy-notification';
-        notification.textContent = message;
-        document.body.appendChild(notification);
+    function createTimestampField(timestamp) {
+        const date = new Date(timestamp * 1000);
+        const options = {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            fractionalSecondDigits: 3
+        };
         
-        setTimeout(() => {
-            notification.remove();
-        }, 2000);
+        return `
+            <div class="timestamp-field" data-raw="${timestamp}">
+                <div class="human-time">${date.toLocaleString('en-US', options)}</div>
+                <div class="raw-time">Unix: ${timestamp}</div>
+            </div>
+        `;
     }
 
     // Search functionality
@@ -173,4 +179,4 @@ function createTimestampField(timestamp) {
 
     // Initial load
     visualizeBlockchain();
-}); // <-- Bu kapanış parantezi eksikti
+});
