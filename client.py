@@ -4,12 +4,33 @@ import os
 import hashlib
 import shutil
 import time
+import json
+
+# Sabit Genesis hash değerleri (uygulamanıza göre güncellenmeli)
+GENESIS_NORMAL_HASH = "00002b0487c6a824a33b529bdff43c940c1874e1910a187f85691cdff7a69eda"
+GENESIS_SECURITY_HASH = "4a4487b1e40eab0c026f03ea8cdab942ec9d5fe2d1b64ddf666ffc91f5c87f30"
+
+# İlgili blok sınıflarını import ediyoruz
+from alpha_block import AlphaBlock
+from security_block import SecurityBlock
+
+def get_previous_hashes():
+    # Eğer latest_block.json varsa, son Beta Block'un hash'lerini al
+    if os.path.exists('latest_block.json'):
+        with open('latest_block.json', 'r') as f:
+            latest = json.load(f)
+        prev_normal_hash = latest.get("alpha_hash")
+        prev_security_hash = latest.get("security_hash")
+    else:
+        prev_normal_hash = GENESIS_NORMAL_HASH
+        prev_security_hash = GENESIS_SECURITY_HASH
+    return prev_normal_hash, prev_security_hash
 
 def calculate_file_hash(filename):
     """Calculate the hash of a file"""
     if not os.path.exists(filename):
         return None
-    
+
     hasher = hashlib.md5()
     with open(filename, 'rb') as f:
         buf = f.read()
@@ -84,11 +105,36 @@ def transfer_menu(client_socket):
             recipient = input("Enter recipient address: ")
             amount = input("Enter transfer amount: ")
             
-            # Send a simple test message
-            transfer_message = f"TRANSFER|{recipient}|{amount}"
-            client_socket.send(transfer_message.encode('utf-8'))
+            # Önce sunucuya mevcut zincir durumunu sor
+            client_socket.send("GET_PREV_HASHES".encode('utf-8'))
+            response = client_socket.recv(4096).decode('utf-8')
+            prev_hashes = json.loads(response)
+            prev_normal = prev_hashes.get("prev_normal_hash")
+            prev_security = prev_hashes.get("prev_security_hash")
             
-            print(f"✉️ Transfer request sent: {transfer_message}")
+            # Sunucudan alınan prev hashleri kullanarak blok oluşturuluyor
+            from alpha_block import AlphaBlock
+            from security_block import SecurityBlock
+            
+            alpha_block = AlphaBlock(prev_normal, recipient, amount, tag='transaction')
+            security_block = SecurityBlock(prev_security)
+            
+            transfer_data = {
+                "action": "transfer",
+                "alpha": alpha_block.to_dict(),
+                "security": security_block.to_dict()
+            }
+            
+            client_socket.send(json.dumps(transfer_data).encode('utf-8'))
+            
+            # Transfer işlemi tamamlandığında sunucunun Beta Block bilgisini al
+            beta_response = client_socket.recv(4096).decode('utf-8')
+            beta_data = json.loads(beta_response)
+            # Beta block bilgisini kaydedebilirsiniz; örn. latest_block.json olarak
+            with open("latest_block.json", "w") as f:
+                json.dump(beta_data, f, indent=4)
+            
+            print("✉️ Transfer completed and beta block updated.")
             input("Press ENTER to continue...")
         
         elif choice == '2':
@@ -135,7 +181,7 @@ def start_client():
             print("6. Balance")
             print("7. Account")
             print("8. Server")
-            print("9. Server Status")  # Yeni seçenek
+            print("9. Server Status")
             print("10. Exit")
 
             choice = input("Enter your choice: ")
@@ -170,7 +216,7 @@ def start_client():
                 server_menu(client_socket)
 
             elif choice == '9':
-                server_status(client_socket)  # Server Status menüsünü çağırın
+                server_status(client_socket)
 
             elif choice == '10':
                 break
