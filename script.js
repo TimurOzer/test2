@@ -74,7 +74,8 @@ function formatContent(data) {
         };
 
         // Hash Benzeri Alanlar
-        if (specialFields.hash.some(f => key.toLowerCase().includes(f)) {
+        if (specialFields.hash.some(f => key.toLowerCase().includes(f)) 
+        {
             const formattedValue = typeof value === 'string' ? value : JSON.stringify(value);
             return createSpecialField(key, formattedValue, 'hash');
         }
