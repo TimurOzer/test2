@@ -105,20 +105,26 @@ def transfer_menu(client_socket):
             recipient = input("Enter recipient address: ")
             amount = input("Enter transfer amount: ")
             
-            # Önce sunucuya mevcut zincir durumunu sor
+            # GET_PREV_HASHES cevabını alıyoruz:
             client_socket.send("GET_PREV_HASHES".encode('utf-8'))
-            response = client_socket.recv(4096).decode('utf-8')
-            prev_hashes = json.loads(response)
-            prev_normal = prev_hashes.get("prev_normal_hash")
-            prev_security = prev_hashes.get("prev_security_hash")
-            
-            # Sunucudan alınan prev hashleri kullanarak blok oluşturuluyor
+            response = json.loads(client_socket.recv(4096).decode('utf-8'))
+
+            last_beta_hash = response.get("last_beta_hash")
+            previous_hash = GENESIS_NORMAL_HASH if last_beta_hash is None else last_beta_hash  # Alpha block için
+ 
+            prev_security_value = response.get("prev_security_hash")
+            prev_security_value = GENESIS_SECURITY_HASH if prev_security_value is None else prev_security_value
+
+            tag = "transaction"
+
             from alpha_block import AlphaBlock
             from security_block import SecurityBlock
-            
-            alpha_block = AlphaBlock(prev_normal, recipient, amount, tag='transaction')
-            security_block = SecurityBlock(prev_security)
-            
+
+            # Yeni Alpha Block: previous_hash olarak Beta block'un block_hash'i
+            alpha_block = AlphaBlock(previous_hash, recipient, amount, tag)
+            # Yeni Security Block: input olarak Beta block'un computed security hash
+            security_block = SecurityBlock(prev_security_value)
+
             transfer_data = {
                 "action": "transfer",
                 "alpha": alpha_block.to_dict(),
@@ -127,10 +133,9 @@ def transfer_menu(client_socket):
             
             client_socket.send(json.dumps(transfer_data).encode('utf-8'))
             
-            # Transfer işlemi tamamlandığında sunucunun Beta Block bilgisini al
+            # Transfer işlemi tamamlandığında sunucudan Beta Block bilgisini alıp kaydediyoruz
             beta_response = client_socket.recv(4096).decode('utf-8')
             beta_data = json.loads(beta_response)
-            # Beta block bilgisini kaydedebilirsiniz; örn. latest_block.json olarak
             with open("latest_block.json", "w") as f:
                 json.dump(beta_data, f, indent=4)
             
@@ -142,6 +147,7 @@ def transfer_menu(client_socket):
         
         else:
             print("Invalid choice. Please try again.")
+
 
 def start_client():
     host = '192.168.1.106'

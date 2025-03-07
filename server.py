@@ -69,28 +69,29 @@ def get_next_block_number(prefix):
     return max_num + 1
 
 def send_prev_hashes(client_socket):
-    # Beta blok sayısını kontrol edelim
     beta_num = get_next_block_number("beta") - 1
     if beta_num < 1:
-        # Henüz beta yoksa, Genesis'den al
         with open(GENESIS_BLOCK_FILE, "r") as f:
             genesis_data = json.load(f)
         prev_normal = genesis_data.get("block_hash")
         prev_security = genesis_data.get("security_hash")
+        beta_hash = None
     else:
-        # En son beta blok dosyasını oku
         beta_filename = os.path.join(DATA_DIR, f"beta{beta_num}.json")
         with open(beta_filename, "r") as f:
             beta_data = json.load(f)
-        prev_normal = beta_data.get("alpha_hash")
-        prev_security = beta_data.get("security_hash")
+        # Dikkat: Burada eski input değeri olan "prev_security_hash" yerine
+        # Beta blokun computed security hash'ini kullanmalıyız.
+        prev_normal = beta_data.get("block_hash")  # Alpha için, yeni transferde Beta'nin block_hash kullanılabilir.
+        prev_security = beta_data.get("security_hash")  # Computed security hash
+        beta_hash = beta_data.get("block_hash")
     
     response = {
         "prev_normal_hash": prev_normal,
-        "prev_security_hash": prev_security
+        "prev_security_hash": prev_security,
+        "last_beta_hash": beta_hash
     }
     client_socket.send(json.dumps(response).encode('utf-8'))
-
 
 def handle_client(client_socket, client_address):
     print(f"🔗 {client_address} bağlandı.")
@@ -141,9 +142,9 @@ def handle_client(client_socket, client_address):
                     print(f"✅ Security Block kaydedildi: {security_filename}")
 
                     # Beta Block oluşturma
-                    alpha_hash = alpha_data.get("block_hash")
-                    security_hash = security_data.get("security_hash")
-                    beta_block = BetaBlock(alpha_hash, security_hash)
+                    prev_alpha_hash = alpha_data.get("block_hash")
+                    prev_security_hash = security_data.get("security_hash")
+                    beta_block = BetaBlock(prev_alpha_hash, prev_security_hash)
                     beta_data = beta_block.to_dict()
 
                     beta_num = get_next_block_number("beta")
