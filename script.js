@@ -2,163 +2,185 @@ document.addEventListener("DOMContentLoaded", async function () {
     const container = document.getElementById("blockchain-container");
     const searchButton = document.getElementById("search-button");
     const blockInput = document.getElementById("block-input");
+    const hashRegistry = new Map();
 
-    // Kopyalama olayı için event delegation
+    // Kopyalama olayı
     container.addEventListener('click', (event) => {
         const target = event.target.closest('[data-copy]');
         if (target) {
             const value = target.dataset.copy;
             navigator.clipboard.writeText(value)
-                .then(() => showNotification('✓ Copied to clipboard!'))
-                .catch(() => showNotification('⚠️ Failed to copy!'));
+                .then(() => showNotification('✓ Copied!'))
+                .catch(() => showNotification('⚠️ Copy failed!'));
         }
     });
 
-    // Bildirim göster
     function showNotification(message) {
         const notification = document.createElement('div');
-        notification.className = 'copy-notification';
+        notification.className = 'notification';
         notification.textContent = message;
         document.body.appendChild(notification);
         setTimeout(() => notification.remove(), 2000);
     }
 
-    // Fetch JSON data
     async function fetchBlockData(file) {
         try {
             const response = await fetch(`data/${file}`);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            if (!response.ok) throw new Error(`Failed to load ${file}`);
             return await response.json();
         } catch (error) {
-            console.error('Error fetching block data:', error);
+            console.error(`Error loading ${file}:`, error);
             return null;
         }
     }
 
-    // Blockchain visualization
     async function visualizeBlockchain() {
         container.innerHTML = '';
+        hashRegistry.clear();
+
         const blocks = {
             genesis: await fetchBlockData('genesis_block.json'),
-            alpha: await Promise.all([1, 2].map(i => fetchBlockData(`alpha${i}.json`))),
-            security: await Promise.all([1, 2].map(i => fetchBlockData(`security${i}.json`))),
-            beta: await Promise.all([1, 2].map(i => fetchBlockData(`beta${i}.json`)))
+            alpha1: await fetchBlockData('alpha1.json'),
+            alpha2: await fetchBlockData('alpha2.json'),
+            security1: await fetchBlockData('security1.json'),
+            security2: await fetchBlockData('security2.json'),
+            beta1: await fetchBlockData('beta1.json'),
+            beta2: await fetchBlockData('beta2.json')
         };
 
-        // Create blockchain structure
-        createBlockRow([blocks.genesis], 'genesis-row');
-        
-        for (let i = 0; i < 2; i++) {
-            createBlockRow([blocks.alpha[i], blocks.security[i]], `layer-${i+1}`);
-            createBlockRow([blocks.beta[i]], `beta-${i+1}`);
-        }
+        createBlockRow([blocks.genesis], 'genesis');
+        createBlockRow([blocks.alpha1, blocks.security1], 'alpha-security-1');
+        createBlockRow([blocks.beta1], 'beta-1');
+        createBlockRow([blocks.alpha2, blocks.security2], 'alpha-security-2');
+        createBlockRow([blocks.beta2], 'beta-2');
     }
 
-    function createBlockRow(blockData, rowClass) {
+    function createBlockRow(blocks, rowClass) {
         const row = document.createElement('div');
-        row.className = `block-row ${rowClass}`;
+        row.className = `row ${rowClass}`;
         
-        blockData.forEach(data => {
-            if (data) {
-                const block = createBlockElement(data);
+        blocks.forEach(blockData => {
+            if (blockData) {
+                const block = createBlock(blockData);
                 row.appendChild(block);
+                registerHashes(blockData, block);
             }
         });
         
         container.appendChild(row);
     }
 
-    function createBlockElement(data) {
+    function createBlock(data) {
         const block = document.createElement('div');
         block.className = 'block';
         
-        // Bloğun hash'ini ID olarak ata (case-insensitive için küçük harf)
-        if (data.hash) {
-            block.id = data.hash.toLowerCase();
+        // Ana hash'i belirle
+        const mainHash = data.block_hash || data.security_hash || data.hash;
+        if (mainHash) {
+            block.id = mainHash.toLowerCase();
+            block.dataset.mainHash = mainHash;
         }
 
         const header = document.createElement('div');
-        header.className = 'block-header';
-        header.textContent = data.blockName || 'Baklava Block';
+        header.className = 'header';
+        header.textContent = data.blockName || determineBlockType(data);
         
         const content = document.createElement('div');
-        content.className = 'block-content';
-        content.innerHTML = formatContent(data);
+        content.className = 'content';
+        content.innerHTML = generateContent(data);
 
         block.appendChild(header);
         block.appendChild(content);
         return block;
     }
 
-    function formatContent(data) {
+    function determineBlockType(data) {
+        if (data.security_data) return "Security Block";
+        if (data.prev_alpha_hash) return "Beta Block";
+        if (data.token_address) return "Genesis Block";
+        return "Alpha Block";
+    }
+
+    function registerHashes(data, element) {
+        const hashFields = [
+            'block_hash', 'security_hash', 'prev_alpha_hash',
+            'prev_security_hash', 'security_data', 'previous_hash',
+            'token_address', 'prev_hash_1', 'prev_hash_2'
+        ];
+
+        hashFields.forEach(field => {
+            if (data[field]) {
+                const hash = data[field].toLowerCase();
+                hashRegistry.set(hash, element);
+            }
+        });
+    }
+
+    function generateContent(data) {
         return Object.entries(data).map(([key, value]) => {
-            const specialFields = {
-                hash: ['hash', 'merkleroot', 'signature', 'token_address', 'security_data', 'block_hash', 'prev_hash_1', 'prev_hash_2'],
-                timestamp: ['timestamp', 'time', 'date'],
-                code: ['address', 'id', 'nonce', 'max_supply', 'recipient', 'amount', 'tag']
-            };
+            const isHash = key.toLowerCase().includes('hash') || 
+                         key === 'security_data' || 
+                         key === 'token_address';
+            
+            const isTimestamp = key === 'timestamp';
+            const isSpecial = key === 'nonce' || key === 'max_supply';
 
-            // Hash Benzeri Alanlar
-            if (specialFields.hash.some(f => key.toLowerCase().includes(f))) {
-                const formattedValue = typeof value === 'string' ? value : JSON.stringify(value);
+            if (isHash) {
                 return `
-                    <div class="copy-field" data-copy="${formattedValue}">
+                    <div class="hash-field" data-copy="${value}">
                         <strong>${key}:</strong>
-                        <span class="short-value">${formattedValue.slice(0, 6)}...${formattedValue.slice(-4)}</span>
-                        <span class="copy-hint">Click to copy</span>
+                        <span class="hash-value">${shortenHash(value)}</span>
+                        <span class="copy-label">(copy)</span>
                     </div>
                 `;
             }
 
-            // Timestamp Alanları
-            if (specialFields.timestamp.includes(key.toLowerCase())) {
-                const date = new Date(value * 1000).toLocaleString();
+            if (isTimestamp) {
                 return `
-                    <div class="copy-field" data-copy="${value}">
+                    <div class="time-field" data-copy="${value}">
                         <strong>${key}:</strong>
-                        <span>${date}</span>
-                        <span class="copy-hint">Click to copy Unix time</span>
+                        ${formatDate(value)}
+                        <span class="copy-label">(copy timestamp)</span>
                     </div>
                 `;
             }
 
-            // Kod Benzeri Alanlar (max_supply, nonce, recipient, amount, tag)
-            if (specialFields.code.some(f => key.toLowerCase().includes(f))) {
-                return `
-                    <div class="copy-field">
-                        <strong>${key}:</strong>
-                        <span>${value}</span>
-                    </div>
-                `;
+            if (isSpecial) {
+                return `<div class="special-field"><strong>${key}:</strong> ${value}</div>`;
             }
 
-            // Normal alanlar
-            return `<div class="data-field"><strong>${key}:</strong> ${value}</div>`;
+            return `<div class="normal-field"><strong>${key}:</strong> ${value}</div>`;
         }).join('');
     }
 
-    // Arama fonksiyonu
-    searchButton.addEventListener('click', async () => {
+    function shortenHash(hash) {
+        return `${hash.slice(0, 6)}...${hash.slice(-4)}`;
+    }
+
+    function formatDate(timestamp) {
+        return new Date(timestamp * 1000).toLocaleString();
+    }
+
+    // Gelişmiş arama
+    searchButton.addEventListener('click', () => {
         const searchTerm = blockInput.value.trim().toLowerCase();
         if (!searchTerm) return;
 
-        const targetBlock = document.getElementById(searchTerm);
-        if (targetBlock) {
-            targetBlock.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'center' 
+        const targetElement = hashRegistry.get(searchTerm) || 
+                            document.getElementById(searchTerm);
+
+        if (targetElement) {
+            targetElement.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
             });
-            
-            // Geçici vurgulama efekti
-            targetBlock.classList.add('highlight');
-            setTimeout(() => {
-                targetBlock.classList.remove('highlight');
-            }, 2000);
+            targetElement.classList.add('glow');
+            setTimeout(() => targetElement.classList.remove('glow'), 1500);
         } else {
-            showNotification('⛔ Block not found!');
+            showNotification('🔍 Hash not found in blockchain!');
         }
     });
 
-    // İlk yükleme
+    // Başlangıç
     visualizeBlockchain();
 });
