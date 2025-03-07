@@ -86,50 +86,51 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     function formatContent(data) {
-        return Object.entries(data).map(([key, value]) => {
-            const specialFields = {
-                hash: ['hash', 'merkleroot', 'signature', 'token_address', 'security_data'],
-                timestamp: ['timestamp', 'time', 'date'],
-                code: ['address', 'id', 'nonce']
-            };
+    return Object.entries(data).map(([key, value]) => {
+        const specialFields = {
+            hash: ['hash', 'merkleroot', 'signature', 'token_address', 'security_data', 'block_hash', 'prev_hash_1', 'prev_hash_2'],
+            timestamp: ['timestamp', 'time', 'date'],
+            code: ['address', 'id', 'nonce', 'max_supply', 'recipient', 'amount', 'tag']
+        };
 
-            // Hash Benzeri Alanlar
-            if (specialFields.hash.some(f => key.toLowerCase().includes(f))) {
-                const formattedValue = typeof value === 'string' ? value : JSON.stringify(value);
-                return `
-                    <div class="copy-field" data-copy="${formattedValue}">
-                        <strong>${key}:</strong>
-                        <span class="short-value">${formattedValue.slice(0, 6)}...${formattedValue.slice(-4)}</span>
-                        <span class="copy-hint">Click to copy</span>
-                    </div>
-                `;
-            }
+        // Hash Benzeri Alanlar
+        if (specialFields.hash.some(f => key.toLowerCase().includes(f))) {
+            const formattedValue = typeof value === 'string' ? value : JSON.stringify(value);
+            return `
+                <div class="copy-field" data-copy="${formattedValue}">
+                    <strong>${key}:</strong>
+                    <span class="short-value">${formattedValue.slice(0, 6)}...${formattedValue.slice(-4)}</span>
+                    <span class="copy-hint">Click to copy</span>
+                </div>
+            `;
+        }
 
-            // Timestamp Alanları
-            if (specialFields.timestamp.includes(key.toLowerCase())) {
-                const date = new Date(value * 1000).toLocaleString();
-                return `
-                    <div class="copy-field" data-copy="${value}">
-                        <strong>${key}:</strong>
-                        <span>${date}</span>
-                        <span class="copy-hint">Click to copy Unix time</span>
-                    </div>
-                `;
-            }
+        // Timestamp Alanları
+        if (specialFields.timestamp.includes(key.toLowerCase())) {
+            const date = new Date(value * 1000).toLocaleString();
+            return `
+                <div class="copy-field" data-copy="${value}">
+                    <strong>${key}:</strong>
+                    <span>${date}</span>
+                    <span class="copy-hint">Click to copy Unix time</span>
+                </div>
+            `;
+        }
 
-            // Kod Benzeri Alanlar
-            if (specialFields.code.some(f => key.toLowerCase().includes(f))) {
-                return `<div class="code-snippet">${key}: <code>${value}</code></div>`;
-            }
+        // Kod Benzeri Alanlar (max_supply, nonce, recipient, amount, tag)
+        if (specialFields.code.some(f => key.toLowerCase().includes(f))) {
+            return `
+                <div class="copy-field">
+                    <strong>${key}:</strong>
+                    <span>${value}</span>
+                </div>
+            `;
+        }
 
-            // Obje ve Diğer Alanlar
-            if (typeof value === 'object') {
-                return `<div class="object-field"><strong>${key}:</strong><pre>${JSON.stringify(value, null, 2)}</pre></div>`;
-            }
-
-            return `<div class="regular-field"><strong>${key}:</strong> ${value}</div>`;
-        }).join('');
-    }
+        // Normal alanlar
+        return `<div class="data-field"><strong>${key}:</strong> ${value}</div>`;
+    }).join('');
+}
 
     // Arama fonksiyonu
     searchButton.addEventListener('click', async () => {
