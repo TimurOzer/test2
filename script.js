@@ -129,7 +129,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         field.className = `special-field ${type}`;
         field.dataset.full = value;
         
-        field.innerHTML = ` 
+        field.innerHTML = `
             <div class="field-header">
                 <span class="field-key">${key}:</span>
                 <span class="copy-indicator">📋</span>
@@ -143,12 +143,10 @@ document.addEventListener("DOMContentLoaded", async function () {
             </div>
         `;
         
-        // Tıklanabilir alanın işlevselliği
+        // Event listener ekle
         field.addEventListener('click', handleSpecialClick);
-
         return field;
     }
-});
 
     function createTimestampField(timestamp) {
         const date = new Date(timestamp * 1000);
