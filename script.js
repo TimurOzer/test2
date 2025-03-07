@@ -117,6 +117,11 @@ document.addEventListener("DOMContentLoaded", async function () {
                 return `<div class="object-field"><strong>${key}:</strong><pre>${JSON.stringify(value, null, 2)}</pre></div>`;
             }
 
+            // Eğer `value` bir DOM öğesi değilse, direkt göster
+            if (value instanceof HTMLElement) {
+                return `<div class="html-element-field"><strong>${key}:</strong> [HTML Element]</div>`;
+            }
+
             return `<div class="regular-field"><strong>${key}:</strong> ${value}</div>`;
         }).join('');
     }
