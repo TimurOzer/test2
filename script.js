@@ -23,22 +23,21 @@ document.addEventListener("DOMContentLoaded", async function () {
         setTimeout(() => notification.remove(), 2000);
     }
 
-    // Blok verilerini yükle
+    // Fetch JSON data
     async function fetchBlockData(file) {
         try {
             const response = await fetch(`data/${file}`);
-            if (!response.ok) throw new Error(`HTTP error! ${response.status}`);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             return await response.json();
         } catch (error) {
-            console.error(`Error loading ${file}:`, error);
+            console.error('Error fetching block data:', error);
             return null;
         }
     }
 
-    // Blockchain görselleştirme
+    // Blockchain visualization
     async function visualizeBlockchain() {
         container.innerHTML = '';
-        
         const blocks = {
             genesis: await fetchBlockData('genesis_block.json'),
             alpha: await Promise.all([1, 2].map(i => fetchBlockData(`alpha${i}.json`))),
@@ -46,20 +45,15 @@ document.addEventListener("DOMContentLoaded", async function () {
             beta: await Promise.all([1, 2].map(i => fetchBlockData(`beta${i}.json`)))
         };
 
-        // Genesis bloğu
-        if (blocks.genesis) {
-            createBlockRow([blocks.genesis], 'genesis-row');
-        }
-
-        // Alpha, Security ve Beta blokları
+        // Create blockchain structure
+        createBlockRow([blocks.genesis], 'genesis-row');
+        
         for (let i = 0; i < 2; i++) {
-            createBlockRow([blocks.alpha[i], `alpha-row-${i + 1}`);
-            createBlockRow([blocks.security[i]], `security-row-${i + 1}`);
-            createBlockRow([blocks.beta[i]], `beta-row-${i + 1}`);
+            createBlockRow([blocks.alpha[i], blocks.security[i]], `layer-${i+1}`);
+            createBlockRow([blocks.beta[i]], `beta-${i+1}`);
         }
     }
 
-    // Blok satırı oluştur
     function createBlockRow(blockData, rowClass) {
         const row = document.createElement('div');
         row.className = `block-row ${rowClass}`;
@@ -74,7 +68,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         container.appendChild(row);
     }
 
-    // Blok elementi oluştur
     function createBlockElement(data) {
         const block = document.createElement('div');
         block.className = 'block';
@@ -92,22 +85,28 @@ document.addEventListener("DOMContentLoaded", async function () {
         return block;
     }
 
-    // İçerik formatlama
     function formatContent(data) {
         return Object.entries(data).map(([key, value]) => {
-            // Hash ve adresler
-            if (['hash', 'token_address', 'security_data'].some(k => key.toLowerCase().includes(k))) {
+            const specialFields = {
+                hash: ['hash', 'merkleroot', 'signature', 'token_address', 'security_data'],
+                timestamp: ['timestamp', 'time', 'date'],
+                code: ['address', 'id', 'nonce']
+            };
+
+            // Hash Benzeri Alanlar
+            if (specialFields.hash.some(f => key.toLowerCase().includes(f))) {
+                const formattedValue = typeof value === 'string' ? value : JSON.stringify(value);
                 return `
-                    <div class="copy-field" data-copy="${value}">
+                    <div class="copy-field" data-copy="${formattedValue}">
                         <strong>${key}:</strong>
-                        <span class="short-value">${value.slice(0, 6)}...${value.slice(-4)}</span>
+                        <span class="short-value">${formattedValue.slice(0, 6)}...${formattedValue.slice(-4)}</span>
                         <span class="copy-hint">Click to copy</span>
                     </div>
                 `;
             }
-            
-            // Timestamp
-            if (key.toLowerCase() === 'timestamp') {
+
+            // Timestamp Alanları
+            if (specialFields.timestamp.includes(key.toLowerCase())) {
                 const date = new Date(value * 1000).toLocaleString();
                 return `
                     <div class="copy-field" data-copy="${value}">
@@ -118,15 +117,27 @@ document.addEventListener("DOMContentLoaded", async function () {
                 `;
             }
 
-            // Normal alanlar
-            return `<div class="data-field"><strong>${key}:</strong> ${value}</div>`;
+            // Kod Benzeri Alanlar
+            if (specialFields.code.some(f => key.toLowerCase().includes(f))) {
+                return `<div class="code-snippet">${key}: <code>${value}</code></div>`;
+            }
+
+            // Obje ve Diğer Alanlar
+            if (typeof value === 'object') {
+                return `<div class="object-field"><strong>${key}:</strong><pre>${JSON.stringify(value, null, 2)}</pre></div>`;
+            }
+
+            return `<div class="regular-field"><strong>${key}:</strong> ${value}</div>`;
         }).join('');
     }
 
     // Arama fonksiyonu
     searchButton.addEventListener('click', async () => {
-        const term = blockInput.value.trim();
-        if (term) alert('Search feature coming soon!');
+        const searchTerm = blockInput.value.trim();
+        if (!searchTerm) return;
+
+        // Implement search logic here
+        alert('Search functionality coming soon!');
     });
 
     // İlk yükleme
