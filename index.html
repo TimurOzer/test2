@@ -3,21 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blockchain Explorer</title>
+    <title>Baklava Blockchain Explorer</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/png" href="baklava-icon.png">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Blockchain Explorer</h1>
-            <input type="text" id="block-input" placeholder="Block Hash or Address">
-            <button id="search-button">Search</button>
+            <div class="header-content">
+                <img src="baklava-logo.png" alt="Baklava Blockchain Logo" class="logo">
+                <h1>Baklava Blockchain Explorer</h1>
+                <div class="search-container">
+                    <input type="text" id="block-input" placeholder="Search block hash or height...">
+                    <button id="search-button">Explore</button>
+                </div>
+            </div>
         </header>
 
         <main id="main-content">
-            <div id="block-details" class="block-detail">
-                <!-- Block data will be displayed here -->
-            </div>
+            <div id="blockchain-container"></div>
+            <div id="block-details" class="block-detail"></div>
         </main>
     </div>
 

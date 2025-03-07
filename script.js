@@ -1,47 +1,88 @@
-// Sample Blockchain data (This will be fetched in a real app)
-const blockData = {
-    "genesis_block": {
-        "hash": "0x1234567890abcdef",
-        "timestamp": "2025-03-07T12:34:56Z",
-        "transactions": 12,
-        "miner": "0xabc123",
-        "blockReward": 5
-    },
-    "alpha1": {
-        "hash": "0xabcdef1234567890",
-        "timestamp": "2025-03-07T13:00:00Z",
-        "transactions": 8,
-        "miner": "0xdef456",
-        "blockReward": 5
-    },
-    // Add more blocks as needed
-};
+document.addEventListener("DOMContentLoaded", async function () {
+    const container = document.getElementById("blockchain-container");
+    const searchButton = document.getElementById("search-button");
+    const blockInput = document.getElementById("block-input");
 
-// Function to display block data
-function displayBlockDetails(block) {
-    const blockDetailsElement = document.getElementById("block-details");
-    
-    if (block) {
-        blockDetailsElement.innerHTML = `
-            <h2>Block Details: ${block.hash}</h2>
-            <p><strong>Timestamp:</strong> ${block.timestamp}</p>
-            <p><strong>Transactions:</strong> ${block.transactions}</p>
-            <p><strong>Miner:</strong> ${block.miner}</p>
-            <p><strong>Block Reward:</strong> ${block.blockReward} ETH</p>
-        `;
-    } else {
-        blockDetailsElement.innerHTML = `<p>Block not found. Please check the hash/address and try again.</p>`;
+    // Fetch JSON data
+    async function fetchBlockData(file) {
+        try {
+            const response = await fetch(`data/${file}`);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching block data:', error);
+            return null;
+        }
     }
-}
 
-// Handle search button click
-document.getElementById("search-button").addEventListener("click", () => {
-    const blockHash = document.getElementById("block-input").value.toLowerCase();
-    
-    // In a real app, you would fetch block data from a blockchain API based on the entered hash
-    if (blockData[blockHash]) {
-        displayBlockDetails(blockData[blockHash]);
-    } else {
-        displayBlockDetails(null);
+    // Blockchain visualization
+    async function visualizeBlockchain() {
+        container.innerHTML = '';
+        const blocks = {
+            genesis: await fetchBlockData('genesis_block.json'),
+            alpha: await Promise.all([1, 2].map(i => fetchBlockData(`alpha${i}.json`))),
+            security: await Promise.all([1, 2].map(i => fetchBlockData(`security${i}.json`))),
+            beta: await Promise.all([1, 2].map(i => fetchBlockData(`beta${i}.json`)))
+        };
+
+        // Create blockchain structure
+        createBlockRow([blocks.genesis], 'genesis-row');
+        
+        for (let i = 0; i < 2; i++) {
+            createBlockRow([blocks.alpha[i], blocks.security[i]], `layer-${i+1}`);
+            createBlockRow([blocks.beta[i]], `beta-${i+1}`);
+        }
     }
+
+    function createBlockRow(blockData, rowClass) {
+        const row = document.createElement('div');
+        row.className = `block-row ${rowClass}`;
+        
+        blockData.forEach(data => {
+            if (data) {
+                const block = createBlockElement(data);
+                row.appendChild(block);
+            }
+        });
+        
+        container.appendChild(row);
+    }
+
+    function createBlockElement(data) {
+        const block = document.createElement('div');
+        block.className = 'block';
+        
+        const header = document.createElement('div');
+        header.className = 'block-header';
+        header.textContent = data.blockName || 'Baklava Block';
+        
+        const content = document.createElement('div');
+        content.className = 'block-content';
+        content.innerHTML = formatContent(data);
+
+        block.appendChild(header);
+        block.appendChild(content);
+        return block;
+    }
+
+    function formatContent(data) {
+        return Object.entries(data).map(([key, value]) => {
+            if (typeof value === 'object') {
+                return `<strong>${key}:</strong><pre>${JSON.stringify(value, null, 2)}</pre>`;
+            }
+            return `<strong>${key}:</strong> ${value}`;
+        }).join('<br>');
+    }
+
+    // Search functionality
+    searchButton.addEventListener('click', async () => {
+        const searchTerm = blockInput.value.trim();
+        if (!searchTerm) return;
+
+        // Implement search logic here
+        alert('Search functionality coming soon!');
+    });
+
+    // Initial load
+    visualizeBlockchain();
 });
