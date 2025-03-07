@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", async function() {
     const container = document.getElementById("blockchain-container");
 
+    // JSON dosyalarını çekmek için yardımcı fonksiyon
     async function fetchJSON(file) {
         try {
             const response = await fetch(`data/${file}`);
@@ -11,12 +12,14 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
+    // Blockchain verilerini yükle ve görselleştir
     async function loadBlockchainData() {
-        container.innerHTML = "";
+        container.innerHTML = ""; // Önceki verileri temizle
 
-        // JSON dosyalarını oku
+        // Tüm blokları al
         const files = ["genesis_block.json", "alpha1.json", "security1.json", "beta1.json", "alpha2.json", "security2.json", "beta2.json"];
         let blocks = {};
+
         for (let file of files) {
             let data = await fetchJSON(file);
             if (data) {
@@ -29,33 +32,35 @@ document.addEventListener("DOMContentLoaded", async function() {
         let securityIndex = 1;
         let betaIndex = 1;
 
-        // 1️⃣ Genesis bloğu
-        let genesisRow = document.createElement("div");
-        genesisRow.className = "row";
-        container.appendChild(genesisRow);
+        // Blokları çiz
+        let currentRow = document.createElement("div");
+        currentRow.className = "row";
+        container.appendChild(currentRow);
 
+        // Genesis bloğu
         if (blocks["genesis_block"]) {
-            let genesisBlock = createBlock("Genesis Block", blocks["genesis_block"]);
-            genesisRow.appendChild(genesisBlock);
+            const genesisBlock = createBlock("Genesis Block", blocks["genesis_block"]);
+            currentRow.appendChild(genesisBlock);
             lastBetaHash = blocks["genesis_block"].block_hash;
         }
 
-        // 2️⃣ Zinciri oluştur
+        // Alpha ve Security bloklarını sırasıyla ekle
         while (blocks[`alpha${alphaIndex}`] || blocks[`security${securityIndex}`]) {
-            let alphaRow = document.createElement("div");
-            alphaRow.className = "row";
-            container.appendChild(alphaRow);
+            let newRow = document.createElement("div");
+            newRow.className = "row";
+            container.appendChild(newRow);
 
             if (blocks[`alpha${alphaIndex}`]) {
-                alphaRow.appendChild(createBlock(`Alpha ${alphaIndex}`, blocks[`alpha${alphaIndex}`]));
+                newRow.appendChild(createBlock(`Alpha ${alphaIndex}`, blocks[`alpha${alphaIndex}`]));
                 alphaIndex++;
             }
 
             if (blocks[`security${securityIndex}`]) {
-                alphaRow.appendChild(createBlock(`Security ${securityIndex}`, blocks[`security${securityIndex}`]));
+                newRow.appendChild(createBlock(`Security ${securityIndex}`, blocks[`security${securityIndex}`]));
                 securityIndex++;
             }
 
+            // Beta ekle
             let betaRow = document.createElement("div");
             betaRow.className = "row";
             container.appendChild(betaRow);
@@ -71,8 +76,34 @@ document.addEventListener("DOMContentLoaded", async function() {
     function createBlock(title, data) {
         const block = document.createElement("div");
         block.className = "block";
-        block.innerHTML = `<strong>${title}</strong><br><pre>${JSON.stringify(data, null, 2)}</pre>`;
+
+        // Başlık
+        const blockHeader = document.createElement("div");
+        blockHeader.className = "block-header";
+        blockHeader.innerText = title;
+        block.appendChild(blockHeader);
+
+        // İçerik
+        const blockContent = document.createElement("div");
+        blockContent.className = "block-content";
+        blockContent.innerHTML = formatBlockContent(data);
+        block.appendChild(blockContent);
+
         return block;
+    }
+
+    // JSON içeriğini daha okunabilir hale getir
+    function formatBlockContent(data) {
+        let content = "";
+        
+        for (let key in data) {
+            if (typeof data[key] === "object") {
+                content += `<strong>${key}</strong>:<pre>${JSON.stringify(data[key], null, 2)}</pre><br>`;
+            } else {
+                content += `<strong>${key}</strong>: ${data[key]}<br>`;
+            }
+        }
+        return content;
     }
 
     loadBlockchainData();
