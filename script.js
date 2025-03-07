@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         let securityIndex = 1;
         let betaIndex = 1;
 
-        // Blokları çiz
+        // Blokları dikey olarak çiz
         let currentRow = document.createElement("div");
         currentRow.className = "row";
         container.appendChild(currentRow);

@@ -13,10 +13,9 @@ h1 {
 
 #blockchain-container {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 50px;
+    gap: 40px;
     margin-top: 50px;
 }
 
@@ -57,6 +56,7 @@ h1 {
     border-radius: 5px;
 }
 
+/* Bağlantı çizgisi */
 .connector {
     position: absolute;
     width: 2px;
@@ -69,12 +69,7 @@ h1 {
 
 .row {
     display: flex;
-    justify-content: center;
-    gap: 30px;
-    align-items: flex-start;
+    flex-direction: column;
+    align-items: center;
     position: relative;
-}
-
-.row:last-child .block::after {
-    display: none;
 }
