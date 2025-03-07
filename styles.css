@@ -187,6 +187,7 @@ h1 {
     border-color: #8b4513 transparent transparent transparent;
 }
 
+/* Copy notification */
 .copy-notification {
     position: fixed;
     bottom: 20px;
@@ -196,7 +197,7 @@ h1 {
     color: white;
     padding: 12px 24px;
     border-radius: 25px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     z-index: 1000;
     animation: slideUp 0.3s ease;
 }
@@ -257,16 +258,20 @@ h1 {
     height: 100%;
 }
 
+/* Copy button styling */
 .copy-button {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    background: #8b4513;
+    background-color: #8b4513;
     color: white;
+    border-radius: 25px;
+    font-size: 0.9rem;
     border: none;
-    padding: 5px 10px;
-    border-radius: 4px;
     cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.copy-button:hover {
+    background-color: #4CAF50;
+    transform: translateY(-2px);
 }
 
 /* Timestamp Stilleri */
