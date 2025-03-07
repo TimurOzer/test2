@@ -74,8 +74,7 @@ function formatContent(data) {
         };
 
         // Hash Benzeri Alanlar
-        if (specialFields.hash.some(f => key.toLowerCase().includes(f)) 
-        {
+        if (specialFields.hash.some(f => key.toLowerCase().includes(f))) {
             const formattedValue = typeof value === 'string' ? value : JSON.stringify(value);
             return createSpecialField(key, formattedValue, 'hash');
         }
@@ -152,6 +151,16 @@ function handleSpecialClick(event) {
     });
 }
 
+function showCopyNotification(message) {
+    const notification = document.createElement('div');
+    notification.className = 'copy-notification';
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 2000);
+}
     // Search functionality
     searchButton.addEventListener('click', async () => {
         const searchTerm = blockInput.value.trim();
