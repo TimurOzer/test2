@@ -102,56 +102,21 @@ function createSpecialField(key, value, type) {
     const isHex = /^[0-9a-fx]+$/i.test(value);
     const shortValue = isHex ? `${value.substring(0, 6)}...${value.slice(-4)}` : value.substring(0, 12) + '...';
     
-    const specialField = document.createElement('div');
-    specialField.className = `special-field ${type}`;
-    specialField.dataset.full = value;
-
-    // Create field header and content
-    const fieldHeader = document.createElement('div');
-    fieldHeader.className = 'field-header';
-    
-    const fieldKey = document.createElement('span');
-    fieldKey.className = 'field-key';
-    fieldKey.textContent = `${key}:`;
-    
-    const copyIndicator = document.createElement('span');
-    copyIndicator.className = 'copy-indicator';
-    copyIndicator.textContent = '📋';
-    
-    fieldHeader.appendChild(fieldKey);
-    fieldHeader.appendChild(copyIndicator);
-    
-    const fieldValue = document.createElement('div');
-    fieldValue.className = 'field-value';
-    fieldValue.textContent = shortValue;
-
-    // Full value overlay
-    const fullValueOverlay = document.createElement('div');
-    fullValueOverlay.className = 'full-value-overlay';
-    
-    const fullValueContent = document.createElement('div');
-    fullValueContent.className = 'full-value-content';
-    
-    const fullValueText = document.createElement('span');
-    fullValueText.textContent = value;
-    
-    const copyButton = document.createElement('button');
-    copyButton.className = 'copy-button';
-    copyButton.dataset.value = value;
-    copyButton.textContent = 'Copy Full Value';
-
-    fullValueContent.appendChild(fullValueText);
-    fullValueContent.appendChild(copyButton);
-    fullValueOverlay.appendChild(fullValueContent);
-
-    specialField.appendChild(fieldHeader);
-    specialField.appendChild(fieldValue);
-    specialField.appendChild(fullValueOverlay);
-
-    // Add event listener for the special field
-    specialField.addEventListener('click', handleSpecialClick);
-
-    return specialField;
+    return `
+        <div class="special-field ${type}" data-full="${value}" onclick="handleSpecialClick(event)">
+            <div class="field-header">
+                <span class="field-key">${key}:</span>
+                <span class="copy-indicator">📋</span>
+            </div>
+            <div class="field-value">${shortValue}</div>
+            <div class="full-value-overlay">
+                <div class="full-value-content">
+                    <span>${value}</span>
+                    <button class="copy-button" data-value="${value}">Copy Full Value</button>
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 function createTimestampField(timestamp) {
