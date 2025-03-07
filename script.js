@@ -26,8 +26,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Fetch JSON data
     async function fetchBlockData(file) {
         try {
-            const response = await fetch(data/${file});
-            if (!response.ok) throw new Error(HTTP error! status: ${response.status});
+            const response = await fetch(`data/${file}`);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             return await response.json();
         } catch (error) {
             console.error('Error fetching block data:', error);
@@ -40,23 +40,23 @@ document.addEventListener("DOMContentLoaded", async function () {
         container.innerHTML = '';
         const blocks = {
             genesis: await fetchBlockData('genesis_block.json'),
-            alpha: await Promise.all([1, 2].map(i => fetchBlockData(alpha${i}.json))),
-            security: await Promise.all([1, 2].map(i => fetchBlockData(security${i}.json))),
-            beta: await Promise.all([1, 2].map(i => fetchBlockData(beta${i}.json)))
+            alpha: await Promise.all([1, 2].map(i => fetchBlockData(`alpha${i}.json`))),
+            security: await Promise.all([1, 2].map(i => fetchBlockData(`security${i}.json`))),
+            beta: await Promise.all([1, 2].map(i => fetchBlockData(`beta${i}.json`)))
         };
 
         // Create blockchain structure
         createBlockRow([blocks.genesis], 'genesis-row');
         
         for (let i = 0; i < 2; i++) {
-            createBlockRow([blocks.alpha[i], blocks.security[i]], layer-${i+1});
-            createBlockRow([blocks.beta[i]], beta-${i+1});
+            createBlockRow([blocks.alpha[i], blocks.security[i]], `layer-${i+1}`);
+            createBlockRow([blocks.beta[i]], `beta-${i+1}`);
         }
     }
 
     function createBlockRow(blockData, rowClass) {
         const row = document.createElement('div');
-        row.className = block-row ${rowClass};
+        row.className = `block-row ${rowClass}`;
         
         blockData.forEach(data => {
             if (data) {
@@ -91,51 +91,51 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     function formatContent(data) {
-    return Object.entries(data).map(([key, value]) => {
-        const specialFields = {
-            hash: ['hash', 'merkleroot', 'signature', 'token_address', 'security_data', 'block_hash', 'prev_hash_1', 'prev_hash_2'],
-            timestamp: ['timestamp', 'time', 'date'],
-            code: ['address', 'id', 'nonce', 'max_supply', 'recipient', 'amount', 'tag']
-        };
+        return Object.entries(data).map(([key, value]) => {
+            const specialFields = {
+                hash: ['hash', 'merkleroot', 'signature', 'token_address', 'security_data', 'block_hash', 'prev_hash_1', 'prev_hash_2'],
+                timestamp: ['timestamp', 'time', 'date'],
+                code: ['address', 'id', 'nonce', 'max_supply', 'recipient', 'amount', 'tag']
+            };
 
-        // Hash Benzeri Alanlar
-        if (specialFields.hash.some(f => key.toLowerCase().includes(f))) {
-            const formattedValue = typeof value === 'string' ? value : JSON.stringify(value);
-            return 
-                <div class="copy-field" data-copy="${formattedValue}">
-                    <strong>${key}:</strong>
-                    <span class="short-value">${formattedValue.slice(0, 6)}...${formattedValue.slice(-4)}</span>
-                    <span class="copy-hint">Click to copy</span>
-                </div>
-            ;
-        }
+            // Hash Benzeri Alanlar
+            if (specialFields.hash.some(f => key.toLowerCase().includes(f))) {
+                const formattedValue = typeof value === 'string' ? value : JSON.stringify(value);
+                return `
+                    <div class="copy-field" data-copy="${formattedValue}">
+                        <strong>${key}:</strong>
+                        <span class="short-value">${formattedValue.slice(0, 6)}...${formattedValue.slice(-4)}</span>
+                        <span class="copy-hint">Click to copy</span>
+                    </div>
+                `;
+            }
 
-        // Timestamp Alanları
-        if (specialFields.timestamp.includes(key.toLowerCase())) {
-            const date = new Date(value * 1000).toLocaleString();
-            return 
-                <div class="copy-field" data-copy="${value}">
-                    <strong>${key}:</strong>
-                    <span>${date}</span>
-                    <span class="copy-hint">Click to copy Unix time</span>
-                </div>
-            ;
-        }
+            // Timestamp Alanları
+            if (specialFields.timestamp.includes(key.toLowerCase())) {
+                const date = new Date(value * 1000).toLocaleString();
+                return `
+                    <div class="copy-field" data-copy="${value}">
+                        <strong>${key}:</strong>
+                        <span>${date}</span>
+                        <span class="copy-hint">Click to copy Unix time</span>
+                    </div>
+                `;
+            }
 
-        // Kod Benzeri Alanlar (max_supply, nonce, recipient, amount, tag)
-        if (specialFields.code.some(f => key.toLowerCase().includes(f))) {
-            return 
-                <div class="copy-field">
-                    <strong>${key}:</strong>
-                    <span>${value}</span>
-                </div>
-            ;
-        }
+            // Kod Benzeri Alanlar (max_supply, nonce, recipient, amount, tag)
+            if (specialFields.code.some(f => key.toLowerCase().includes(f))) {
+                return `
+                    <div class="copy-field">
+                        <strong>${key}:</strong>
+                        <span>${value}</span>
+                    </div>
+                `;
+            }
 
-        // Normal alanlar
-        return <div class="data-field"><strong>${key}:</strong> ${value}</div>;
-    }).join('');
-}
+            // Normal alanlar
+            return `<div class="data-field"><strong>${key}:</strong> ${value}</div>`;
+        }).join('');
+    }
 
     // Arama fonksiyonu
     searchButton.addEventListener('click', async () => {
