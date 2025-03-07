@@ -1,107 +1,41 @@
-document.addEventListener("DOMContentLoaded", async function() {
-    const container = document.getElementById("blockchain-container");
-
-    // JSON dosyalarını çekmek için yardımcı fonksiyon
-    async function fetchJSON(file) {
+document.addEventListener("DOMContentLoaded", function () {
+    // JSON dosyasını çekecek fonksiyon
+    async function fetchBlockchainData() {
         try {
-            const response = await fetch(`data/${file}`);
-            return await response.json();
+            // Burada JSON verisini bir dosyadan alıyoruz. Örneğin, "data/genesis_block.json"
+            const response = await fetch('data/blockchain_data.json'); // JSON dosyasının yolu
+            const data = await response.json(); // JSON verisini alıyoruz
+            
+            // Blockchain verileri geldiğinde, onları ekrana yazdırıyoruz
+            renderBlockchainData(data);
         } catch (error) {
-            console.error(`Error fetching ${file}:`, error);
-            return null;
+            console.error('Veri çekilirken bir hata oluştu:', error);
         }
     }
 
-    // Blockchain verilerini yükle ve görselleştir
-    async function loadBlockchainData() {
-        container.innerHTML = ""; // Önceki verileri temizle
-
-        // Tüm blokları al
-        const files = ["genesis_block.json", "alpha1.json", "security1.json", "beta1.json", "alpha2.json", "security2.json", "beta2.json"];
-        let blocks = {};
-
-        for (let file of files) {
-            let data = await fetchJSON(file);
-            if (data) {
-                blocks[file.replace(".json", "")] = data;
-            }
-        }
-
-        let alphaIndex = 1;
-        let securityIndex = 1;
-        let betaIndex = 1;
-
-        // Blokları dikey olarak çiz
-        let currentRow = document.createElement("div");
-        currentRow.className = "row";
-        container.appendChild(currentRow);
-
-        // Genesis bloğu
-        if (blocks["genesis_block"]) {
-            const genesisBlock = createBlock("Genesis Block", blocks["genesis_block"]);
-            currentRow.appendChild(genesisBlock);
-        }
-
-        // Alpha ve Security bloklarını sırasıyla ekle
-        while (blocks[`alpha${alphaIndex}`] || blocks[`security${securityIndex}`]) {
-            let newRow = document.createElement("div");
-            newRow.className = "row";
-            container.appendChild(newRow);
-
-            if (blocks[`alpha${alphaIndex}`]) {
-                newRow.appendChild(createBlock(`Alpha ${alphaIndex}`, blocks[`alpha${alphaIndex}`]));
-                alphaIndex++;
-            }
-
-            if (blocks[`security${securityIndex}`]) {
-                newRow.appendChild(createBlock(`Security ${securityIndex}`, blocks[`security${securityIndex}`]));
-                securityIndex++;
-            }
-
-            // Beta ekle
-            let betaRow = document.createElement("div");
-            betaRow.className = "row";
-            container.appendChild(betaRow);
-
-            if (blocks[`beta${betaIndex}`]) {
-                betaRow.appendChild(createBlock(`Beta ${betaIndex}`, blocks[`beta${betaIndex}`]));
-                betaIndex++;
-            }
-        }
-    }
-
-    function createBlock(title, data) {
-        const block = document.createElement("div");
-        block.className = "block";
-
-        // Başlık
-        const blockHeader = document.createElement("div");
-        blockHeader.className = "block-header";
-        blockHeader.innerText = title;
-        block.appendChild(blockHeader);
-
-        // İçerik
-        const blockContent = document.createElement("div");
-        blockContent.className = "block-content";
-        blockContent.innerHTML = formatBlockContent(data);
-        block.appendChild(blockContent);
-
-        return block;
-    }
-
-    // JSON içeriğini daha okunabilir hale getir
-    function formatBlockContent(data) {
-        let content = "";
+    // Veriyi ekranda render etme fonksiyonu
+    function renderBlockchainData(data) {
+        const blockchainContainer = document.getElementById('blockchain-container');
         
-        for (let key in data) {
-            if (typeof data[key] === "object") {
-                content += `<strong>${key}</strong>:<pre>${JSON.stringify(data[key], null, 2)}</pre><br>`;
-            } else {
-                content += `<strong>${key}</strong>: ${data[key]}<br>`;
-            }
-        }
-        return content;
+        data.forEach(block => {
+            const blockElement = document.createElement('div');
+            blockElement.classList.add('block');
+
+            const blockHeader = document.createElement('div');
+            blockHeader.classList.add('block-header');
+            blockHeader.textContent = block.title;
+
+            const blockContent = document.createElement('div');
+            blockContent.classList.add('block-content');
+            blockContent.innerHTML = `<pre>${JSON.stringify(block.content, null, 4)}</pre>`;
+
+            blockElement.appendChild(blockHeader);
+            blockElement.appendChild(blockContent);
+
+            blockchainContainer.appendChild(blockElement);
+        });
     }
 
-    loadBlockchainData();
+    // Blockchain verilerini çekmeye başlıyoruz
+    fetchBlockchainData();
 });
