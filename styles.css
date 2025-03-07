@@ -338,3 +338,40 @@ code {
         width: 100%;
     }
 }
+
+.copy-field {
+    cursor: pointer;
+    padding: 8px;
+    margin: 5px 0;
+    background: #fff3e0;
+    border-radius: 4px;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.copy-field:hover {
+    background: #ffe0b2;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.short-value {
+    font-family: monospace;
+    color: #8b4513;
+}
+
+.copy-hint {
+    display: none;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #8b4513;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 0.8em;
+}
+
+.copy-field:hover .copy-hint {
+    display: block;
+}
