@@ -409,3 +409,13 @@ code {
     border-bottom: 2px solid #ffd700;
     padding-bottom: 5px;
 }
+
+.highlight {
+    animation: highlight 2s ease;
+    box-shadow: 0 0 15px yellow;
+}
+
+@keyframes highlight {
+    0% { background-color: rgba(255,255,0,0.3); }
+    100% { background-color: transparent; }
+}

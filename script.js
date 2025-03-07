@@ -72,6 +72,11 @@ document.addEventListener("DOMContentLoaded", async function () {
         const block = document.createElement('div');
         block.className = 'block';
         
+        // Bloğun hash'ini ID olarak ata (case-insensitive için küçük harf)
+        if (data.hash) {
+            block.id = data.hash.toLowerCase();
+        }
+
         const header = document.createElement('div');
         header.className = 'block-header';
         header.textContent = data.blockName || 'Baklava Block';
@@ -134,11 +139,24 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Arama fonksiyonu
     searchButton.addEventListener('click', async () => {
-        const searchTerm = blockInput.value.trim();
+        const searchTerm = blockInput.value.trim().toLowerCase();
         if (!searchTerm) return;
 
-        // Implement search logic here
-        alert('Search functionality coming soon!');
+        const targetBlock = document.getElementById(searchTerm);
+        if (targetBlock) {
+            targetBlock.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+            });
+            
+            // Geçici vurgulama efekti
+            targetBlock.classList.add('highlight');
+            setTimeout(() => {
+                targetBlock.classList.remove('highlight');
+            }, 2000);
+        } else {
+            showNotification('⛔ Block not found!');
+        }
     });
 
     // İlk yükleme
