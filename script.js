@@ -34,24 +34,40 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
-    async function visualizeBlockchain() {
-        container.innerHTML = '';
-        hashRegistry.clear();
+async function visualizeBlockchain() {
+    container.innerHTML = '';
+    hashRegistry.clear();
 
-        const blocks = {
-            genesis: await fetchBlockData('genesis_block.json'),
-            alpha: await Promise.all([1, 2].map(i => fetchBlockData(`alpha${i}.json`))),
-            security: await Promise.all([1, 2].map(i => fetchBlockData(`security${i}.json`))),
-            beta: await Promise.all([1, 2].map(i => fetchBlockData(`beta${i}.json`)))
-        };
+    const blocks = {
+        genesis: await fetchBlockData('genesis_block.json'),
+        alpha: [],
+        security: [],
+        beta: []
+    };
 
-        createBlockRow([blocks.genesis], 'genesis-row');
-        
-        for (let i = 0; i < 2; i++) {
-            createBlockRow([blocks.alpha[i], blocks.security[i]], `layer-${i+1}`);
-            createBlockRow([blocks.beta[i]], `beta-${i+1}`);
+    createBlockRow([blocks.genesis], 'genesis-row');
+
+    let i = 1;
+    while (true) {
+        try {
+            const alphaBlock = await fetchBlockData(`alpha${i}.json`);
+            const securityBlock = await fetchBlockData(`security${i}.json`);
+            const betaBlock = await fetchBlockData(`beta${i}.json`);
+
+            blocks.alpha.push(alphaBlock);
+            blocks.security.push(securityBlock);
+            blocks.beta.push(betaBlock);
+
+            createBlockRow([alphaBlock, securityBlock], `layer-${i}`);
+            createBlockRow([betaBlock], `beta-${i}`);
+
+            i++;
+        } catch (error) {
+            console.error('Blok verisi çekme hatası:', error);
+            break; // Hata durumunda döngüyü sonlandır
         }
     }
+}
 
     function createBlockRow(blockData, rowClass) {
         const row = document.createElement('div');
