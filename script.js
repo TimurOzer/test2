@@ -38,35 +38,33 @@ async function visualizeBlockchain() {
     container.innerHTML = '';
     hashRegistry.clear();
 
-    const blocks = {
-        genesis: await fetchBlockData('genesis_block.json'),
-        alpha: [],
-        security: [],
-        beta: []
-    };
+    // Genesis bloğunu çek
+    const genesisBlock = await fetchBlockData('genesis_block.json');
+    createBlockRow([genesisBlock], 'genesis-row');
 
-    createBlockRow([blocks.genesis], 'genesis-row');
-
+    // Alpha, Security ve Beta bloklarını çek
     let i = 1;
     while (true) {
         try {
-            const alphaBlock = await fetchBlockData(`alpha${i}.json`);
-            const securityBlock = await fetchBlockData(`security${i}.json`);
-            const betaBlock = await fetchBlockData(`beta${i}.json`);
+            // Alpha, Security ve Beta bloklarını aynı anda çek
+            const [alphaBlock, securityBlock, betaBlock] = await Promise.all([
+                fetchBlockData(`alpha${i}.json`),
+                fetchBlockData(`security${i}.json`),
+                fetchBlockData(`beta${i}.json`)
+            ]);
 
-            blocks.alpha.push(alphaBlock);
-            blocks.security.push(securityBlock);
-            blocks.beta.push(betaBlock);
-
+            // Blokları görselleştir
             createBlockRow([alphaBlock, securityBlock], `layer-${i}`);
             createBlockRow([betaBlock], `beta-${i}`);
 
-            i++;
+            i++; // Sonraki blok setine geç
         } catch (error) {
-            console.error('Blok verisi çekme hatası:', error);
-            break; // Hata durumunda döngüyü sonlandır
+            console.error('Blok verisi çekme hatası veya dosya bulunamadı:', error);
+            break; // Hata durumunda veya dosya bulunamadığında döngüyü sonlandır
         }
     }
+
+    console.log('Tüm bloklar başarıyla çekildi ve görselleştirildi.');
 }
 
     function createBlockRow(blockData, rowClass) {
