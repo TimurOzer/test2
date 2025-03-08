@@ -42,7 +42,6 @@ async function visualizeBlockchain() {
     const genesisBlock = await fetchBlockData('genesis_block.json');
     createBlockRow([genesisBlock], 'genesis-row');
 
-    // Alpha, Security ve Beta bloklarını çek
     let i = 1;
     while (true) {
         try {
@@ -53,14 +52,23 @@ async function visualizeBlockchain() {
                 fetchBlockData(`beta${i}.json`)
             ]);
 
+            // Eğer bloklar boşsa veya geçersizse döngüyü sonlandır
+            if (!alphaBlock || !securityBlock || !betaBlock || 
+                Object.keys(alphaBlock).length === 0 || 
+                Object.keys(securityBlock).length === 0 || 
+                Object.keys(betaBlock).length === 0) {
+                console.log(`Blok seti ${i} boş veya geçersiz. Döngü sonlandırılıyor.`);
+                break;
+            }
+
             // Blokları görselleştir
             createBlockRow([alphaBlock, securityBlock], `layer-${i}`);
             createBlockRow([betaBlock], `beta-${i}`);
 
             i++; // Sonraki blok setine geç
         } catch (error) {
-            console.error('Blok verisi çekme hatası veya dosya bulunamadı:', error);
-            break; // Hata durumunda veya dosya bulunamadığında döngüyü sonlandır
+            console.error('Blok verisi çekme hatası:', error);
+            break; // Hata durumunda döngüyü sonlandır
         }
     }
 
