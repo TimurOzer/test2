@@ -117,7 +117,7 @@ async function visualizeBlockchain() {
     function formatContent(data) {
         return Object.entries(data).map(([key, value]) => {
             const specialFields = {
-                hash: ['hash', 'merkleroot', 'signature', 'token_address', 'security_data', 'block_hash', 'prev_hash_1', 'prev_hash_2'],
+                hash: ['hash', 'merkleroot', 'signature', 'token_address', 'security_data', 'block_hash', 'prev_hash_1', 'prev_hash_2', 'recipient'],
                 timestamp: ['timestamp', 'time', 'date'],
                 code: ['address', 'id', 'nonce', 'max_supply', 'recipient', 'amount', 'tag']
             };
