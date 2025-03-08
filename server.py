@@ -170,7 +170,7 @@ def handle_client(client_socket, client_address):
         client_socket.close()
 
 def start_server():
-    host = '192.168.1.106'  # Sunucunun IP adresi
+    host = '10.5.94.163'  # Sunucunun IP adresi
     port = 5555             # Sunucunun portu
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
