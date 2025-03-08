@@ -3,6 +3,8 @@ import threading
 import os
 import json
 from genesis_block import GenesisBlock, TOKEN_ADDRESS, MAX_SUPPLY  # Genesis Block sınıfı ve sabitler
+from wallet import Wallet
+from wallet_block import WalletBlock
 
 # Yeni blok sınıflarını import ediyoruz
 from alpha_block import AlphaBlock
@@ -111,9 +113,29 @@ def handle_client(client_socket, client_address):
             message = client_socket.recv(4096).decode('utf-8')
             if message == "GET_PREV_HASHES":
                 send_prev_hashes(client_socket)
-                continue  # veya döngüden çıkmadan diğer mesajları bekleyin
+                continue  # veya döngüyö kesmeden diğer mesajları bekleyin
             if not message:
                 break
+
+            if message == "CREATE_WALLET":
+                print("🏦 Cüzdan oluşturma talebi alındı.")
+                new_wallet = Wallet()
+                wallet_data = {
+                    "private_key": new_wallet.private_key,
+                    "public_key": new_wallet.public_key,
+                    "address": new_wallet.address
+                }
+                client_socket.send(json.dumps(wallet_data).encode('utf-8'))
+                
+                # Blockchain'e wallet block kaydetme
+                wallet_block = WalletBlock(new_wallet.address)
+                wallet_block_data = wallet_block.to_dict()
+                wallet_num = get_next_block_number("wallet")
+                wallet_filename = os.path.join(DATA_DIR, f"wallet{wallet_num}.json")
+                with open(wallet_filename, "w") as f:
+                    json.dump(wallet_block_data, f, indent=4)
+                print(f"✅ Wallet block oluşturuldu: {wallet_filename}")
+                continue
 
             # Transfer işlemi kontrolü
             try:
@@ -158,7 +180,6 @@ def handle_client(client_socket, client_address):
                 else:
                     print(f"📩 {client_address} mesaj gönderdi: {message}")
             except json.JSONDecodeError:
-                # Gelen mesaj JSON değilse, eski yöntemle kontrol edilebilir
                 if message.startswith('TRANSFER|'):
                     print(f"💸 Transfer talebi alındı: {message}")
                 else:

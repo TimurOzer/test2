@@ -265,7 +265,17 @@ def balance_menu(client_socket):
 
 def wallet_menu(client_socket):
     print("\n--- WALLET MENU ---")
-    print("This feature is still under development.")
+    print("Creating wallet on server...")
+    # Sunucuya wallet oluşturma isteği gönderiyoruz.
+    client_socket.send("CREATE_WALLET".encode('utf-8'))
+    # Server tarafından oluşturulan wallet bilgilerini alıyoruz.
+    wallet_response = client_socket.recv(4096).decode('utf-8')
+    wallet_data = json.loads(wallet_response)
+    # Alınan wallet verileriyle wallet.json dosyasını oluşturuyoruz.
+    with open("wallet.json", "w") as f:
+        json.dump(wallet_data, f, indent=4)
+    print("🏦 Wallet created and saved as wallet.json")
+    print("Address:", wallet_data.get("address"))
     input("Press ENTER to continue...")
 
 def airdrop_menu(client_socket):
