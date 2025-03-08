@@ -15,5 +15,9 @@ class SecurityBlock:
         return {
             'security_data': self.security_data,
             'timestamp': self.timestamp,
-            'security_hash': self.block_hash
+            'security_hash': self.block_hash  # Burada 'security_hash' olarak döndürüyoruz
         }
+
+    @property
+    def security_hash(self):
+        return self.block_hash  # security_hash özelliği olarak block_hash'i döndürüyoruz

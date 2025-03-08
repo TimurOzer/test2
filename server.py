@@ -70,6 +70,21 @@ def get_next_block_number(prefix):
             pass
     return max_num + 1
 
+def get_previous_hashes():
+    beta_num = get_next_block_number("beta") - 1
+    if beta_num < 1:
+        with open(GENESIS_BLOCK_FILE, "r") as f:
+            genesis_data = json.load(f)
+        prev_normal = genesis_data.get("block_hash")
+        prev_security = genesis_data.get("security_hash")
+    else:
+        beta_filename = os.path.join(DATA_DIR, f"beta{beta_num}.json")
+        with open(beta_filename, "r") as f:
+            beta_data = json.load(f)
+        prev_normal = beta_data.get("block_hash")
+        prev_security = beta_data.get("security_hash")
+    return prev_normal, prev_security
+
 def send_prev_hashes(client_socket):
     beta_num = get_next_block_number("beta") - 1
     if beta_num < 1:
@@ -127,14 +142,41 @@ def handle_client(client_socket, client_address):
                 }
                 client_socket.send(json.dumps(wallet_data).encode('utf-8'))
                 
-                # Blockchain'e wallet block kaydetme
-                wallet_block = WalletBlock(new_wallet.address)
-                wallet_block_data = wallet_block.to_dict()
-                wallet_num = get_next_block_number("wallet")
-                wallet_filename = os.path.join(DATA_DIR, f"wallet{wallet_num}.json")
-                with open(wallet_filename, "w") as f:
-                    json.dump(wallet_block_data, f, indent=4)
-                print(f"✅ Wallet block oluşturuldu: {wallet_filename}")
+                # Alpha Block oluşturma
+                prev_normal_hash, prev_security_hash = get_previous_hashes()  # Önceki hash'leri al
+                alpha_block = AlphaBlock(
+                    previous_hash=prev_normal_hash,  # Beta Block'un hash'i
+                    recipient=new_wallet.address,    # Cüzdan adresi
+                    amount="0",                      # Cüzdan oluşturma işlemi için amount=0
+                    tag="wallet"                     # Tag="wallet"
+                )
+                
+                # Alpha Block'u kaydet
+                alpha_num = get_next_block_number("alpha")
+                alpha_filename = os.path.join(DATA_DIR, f"alpha{alpha_num}.json")
+                with open(alpha_filename, "w") as f:
+                    json.dump(alpha_block.to_dict(), f, indent=4)
+                print(f"✅ Alpha Block kaydedildi: {alpha_filename}")
+
+                # Security Block oluşturma
+                security_block = SecurityBlock(prev_security_hash)
+                security_num = get_next_block_number("security")
+                security_filename = os.path.join(DATA_DIR, f"security{security_num}.json")
+                with open(security_filename, "w") as f:
+                    json.dump(security_block.to_dict(), f, indent=4)
+                print(f"✅ Security Block kaydedildi: {security_filename}")
+
+                # Beta Block oluşturma
+                beta_block = BetaBlock(
+                    prev_alpha_hash=alpha_block.block_hash,
+                    prev_security_hash=security_block.security_hash
+                )
+                beta_num = get_next_block_number("beta")
+                beta_filename = os.path.join(DATA_DIR, f"beta{beta_num}.json")
+                with open(beta_filename, "w") as f:
+                    json.dump(beta_block.to_dict(), f, indent=4)
+                print(f"✅ Beta Block oluşturuldu ve kaydedildi: {beta_filename}")
+
                 continue
 
             # Transfer işlemi kontrolü

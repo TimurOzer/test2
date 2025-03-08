@@ -1,8 +1,8 @@
 {
     "previous_hash": "00002b0487c6a824a33b529bdff43c940c1874e1910a187f85691cdff7a69eda",
-    "recipient": "tim",
-    "amount": "4",
-    "tag": "transaction",
-    "timestamp": 1741348169.2246392,
-    "block_hash": "4cc1c52865c1cfea9efb560a2d01585c6bf41f3c46fa0ad70fa94c4c9d3eb111"
+    "recipient": "18kwzacqEbUHT7wbdydqQHhHKwHj85YhVL",
+    "amount": "0",
+    "tag": "wallet",
+    "timestamp": 1741441951.2442048,
+    "block_hash": "fe46523b5cb5e452af93e3fc6fb5058dfda18a812f098d8235558be8fc8c66b9"
 }
