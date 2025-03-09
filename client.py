@@ -280,8 +280,37 @@ def wallet_menu(client_socket):
 
 def airdrop_menu(client_socket):
     print("\n--- AIRDROP MENU ---")
-    print("This feature is still under development.")
-    input("Press ENTER to continue...")
+    print("1. Request Airdrop")
+    print("2. Go Back")
+
+    choice = input("Enter your choice: ")
+
+    if choice == '1':
+        print("\n🪂 Airdrop requested...")
+        # Sunucuya airdrop isteği gönder
+        client_socket.send("REQUEST_AIRDROP".encode('utf-8'))
+
+        # Sunucudan gelen yanıtı al
+        response = client_socket.recv(4096).decode('utf-8')
+        response_data = json.loads(response)
+
+        if response_data.get("status") == "success":
+            # Airdrop başarılı, cüzdan dosyasını güncelle
+            with open("wallet.json", "r") as f:
+                wallet_data = json.load(f)
+            wallet_data["baklava_balance"]["bklvdc38569a110702c2fed1164021f0539df178"] += 1
+            with open("wallet.json", "w") as f:
+                json.dump(wallet_data, f, indent=4)
+            print("🎉 Airdrop successful! 1 Baklava added to your wallet.")
+        else:
+            print("❌ Airdrop failed:", response_data.get("message"))
+        input("Press ENTER to continue...")
+
+    elif choice == '2':
+        return
+
+    else:
+        print("Invalid choice. Please try again.")
 
 def mine_menu(client_socket):
     while True:

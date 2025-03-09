@@ -181,6 +181,72 @@ def handle_client(client_socket, client_address):
 
                 continue
 
+            if message == "REQUEST_AIRDROP":
+                print("🪂 Airdrop talebi alındı.")
+                # Genesis Block'dan airdrop rezervini kontrol et
+                with open(GENESIS_BLOCK_FILE, "r") as f:
+                    genesis_data = json.load(f)
+                airdrop_reserve = genesis_data.get("airdrop", 0)
+
+                if airdrop_reserve >= 1:
+                    # Airdrop rezervinden 1 azalt
+                    genesis_data["airdrop"] -= 1
+                    with open(GENESIS_BLOCK_FILE, "w") as f:
+                        json.dump(genesis_data, f, indent=4)
+                    print("✅ Airdrop rezervi güncellendi.")
+
+                    # Alpha ve Security Block oluştur
+                    prev_normal_hash, prev_security_hash = get_previous_hashes()
+                    alpha_block = AlphaBlock(
+                        previous_hash=prev_normal_hash,
+                        recipient="AIRDROP_RECIPIENT",  # Airdrop alıcısı (istemci cüzdanı)
+                        amount="1",  # 1 Baklava
+                        tag="airdrop"  # İşlem türü
+                    )
+                    security_block = SecurityBlock(prev_security_hash)
+
+                    # Alpha ve Security Block'ları kaydet
+                    alpha_num = get_next_block_number("alpha")
+                    security_num = get_next_block_number("security")
+
+                    alpha_filename = os.path.join(DATA_DIR, f"alpha{alpha_num}.json")
+                    security_filename = os.path.join(DATA_DIR, f"security{security_num}.json")
+
+                    with open(alpha_filename, "w") as f:
+                        json.dump(alpha_block.to_dict(), f, indent=4)
+                    with open(security_filename, "w") as f:
+                        json.dump(security_block.to_dict(), f, indent=4)
+
+                    print(f"✅ Alpha Block kaydedildi: {alpha_filename}")
+                    print(f"✅ Security Block kaydedildi: {security_filename}")
+
+                    # Beta Block oluştur
+                    beta_block = BetaBlock(
+                        prev_alpha_hash=alpha_block.block_hash,
+                        prev_security_hash=security_block.security_hash
+                    )
+                    beta_num = get_next_block_number("beta")
+                    beta_filename = os.path.join(DATA_DIR, f"beta{beta_num}.json")
+                    with open(beta_filename, "w") as f:
+                        json.dump(beta_block.to_dict(), f, indent=4)
+
+                    print(f"✅ Beta Block oluşturuldu ve kaydedildi: {beta_filename}")
+
+                    # İstemciye başarılı yanıt gönder
+                    response = {
+                        "status": "success",
+                        "message": "Airdrop successful! 1 Baklava added to your wallet."
+                    }
+                    client_socket.send(json.dumps(response).encode('utf-8'))
+                else:
+                    # Airdrop rezervi yetersiz
+                    response = {
+                        "status": "error",
+                        "message": "Insufficient airdrop reserve."
+                    }
+                    client_socket.send(json.dumps(response).encode('utf-8'))
+                continue
+
             # Transfer işlemi kontrolü
             try:
                 data = json.loads(message)
@@ -228,6 +294,7 @@ def handle_client(client_socket, client_address):
                     print(f"💸 Transfer talebi alındı: {message}")
                 else:
                     print(f"📩 {client_address} mesaj gönderdi: {message}")
+                
     except Exception as e:
         print(f"❌ Hata: {e}")
     finally:
