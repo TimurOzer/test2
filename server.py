@@ -4,6 +4,7 @@ import os
 import json
 from genesis_block import GenesisBlock, TOKEN_ADDRESS, MAX_SUPPLY  # Genesis Block sınıfı ve sabitler
 from wallet import Wallet, load_wallet  # load_wallet fonksiyonunu da import edin
+from baklava_foundation import BaklavaFoundationWallet  # Baklava Foundation cüzdanını import edin
 from wallet_block import WalletBlock
 
 # Yeni blok sınıflarını import ediyoruz
@@ -244,6 +245,12 @@ def start_server():
 
     ensure_data_dir()
     create_genesis_block()
+
+    # Baklava Foundation cüzdanını kontrol et ve yoksa oluştur
+    foundation_wallet = BaklavaFoundationWallet.load_wallet()
+    if not os.path.exists("baklava_foundation_wallet.json"):
+        foundation_wallet.save_wallet()
+        print("✅ Baklava Foundation cüzdanı oluşturuldu ve kaydedildi.")
 
     while True:
         client_socket, client_address = server_socket.accept()
