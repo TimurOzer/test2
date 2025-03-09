@@ -3,7 +3,7 @@ import threading
 import os
 import json
 from genesis_block import GenesisBlock, TOKEN_ADDRESS, MAX_SUPPLY  # Genesis Block sınıfı ve sabitler
-from wallet import Wallet
+from wallet import Wallet, load_wallet  # load_wallet fonksiyonunu da import edin
 from wallet_block import WalletBlock
 
 # Yeni blok sınıflarını import ediyoruz
@@ -128,7 +128,7 @@ def handle_client(client_socket, client_address):
             message = client_socket.recv(4096).decode('utf-8')
             if message == "GET_PREV_HASHES":
                 send_prev_hashes(client_socket)
-                continue  # veya döngüyö kesmeden diğer mesajları bekleyin
+                continue  # veya döngüyü kesmeden diğer mesajları bekleyin
             if not message:
                 break
 
@@ -138,7 +138,8 @@ def handle_client(client_socket, client_address):
                 wallet_data = {
                     "private_key": new_wallet.private_key,
                     "public_key": new_wallet.public_key,
-                    "address": new_wallet.address
+                    "address": new_wallet.address,
+                    "baklava_balance": new_wallet.baklava_balance  # Bakiyeyi ekleyin
                 }
                 client_socket.send(json.dumps(wallet_data).encode('utf-8'))
                 
@@ -233,7 +234,7 @@ def handle_client(client_socket, client_address):
         client_socket.close()
 
 def start_server():
-    host = '10.5.94.163'  # Sunucunun IP adresi
+    host = '192.168.1.106'  # Sunucunun IP adresi
     port = 5555             # Sunucunun portu
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
