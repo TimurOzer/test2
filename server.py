@@ -4,7 +4,7 @@ import os
 import json
 from genesis_block import GenesisBlock, TOKEN_ADDRESS, MAX_SUPPLY  # Genesis Block sınıfı ve sabitler
 from wallet import Wallet, load_wallet  # load_wallet fonksiyonunu da import edin
-from baklava_foundation import BaklavaFoundationWallet  # Baklava Foundation cüzdanını import edin
+from baklava_foundation import calculate_transfer_fee, transfer_fee_to_foundation, BaklavaFoundationWallet
 from wallet_block import WalletBlock
 from wallet import BAKLAVA_TOKEN_ID
 
@@ -17,6 +17,7 @@ DATA_DIR = "data"  # Veri klasörü
 GENESIS_BLOCK_FILE = os.path.join(DATA_DIR, "genesis_block.json")  # Dosya yolu
 WALLETS_DIR = os.path.join(DATA_DIR, "wallets")  # Yeni eklendi
 BAKLAVA_TOKEN_ID = "bklvdc38569a110702c2fed1164021f0539df178"
+beta_blocks_today = len([f for f in os.listdir(DATA_DIR) if f.startswith("beta")])
 
 def ensure_data_dir():
     """Klasörleri oluştur"""
@@ -298,21 +299,55 @@ def handle_client(client_socket, client_address):
                     sender = data["sender"]
                     recipient = data["recipient"]
                     amount = data["amount"]
+                    tag = data.get("tag", "transfer")  # Default tag is "transfer"
 
-                    # Gönderenin bakiyesini kontrol et
                     sender_path = os.path.join(WALLETS_DIR, f"{sender}.json")
                     with open(sender_path, "r") as f:
                         sender_data = json.load(f)
                     
-                    # Bakiyeyi BAKLAVA_TOKEN_ID ile kontrol et
+                    # Check if sender has enough balance for the amount
                     if sender_data["baklava_balance"].get(BAKLAVA_TOKEN_ID, 0) < amount:
                         client_socket.send(json.dumps({"status": "error", "message": "Yetersiz bakiye"}).encode())
                         continue
 
-                    # Bakiyeyi güncelle
+                    transfer_fee = 0
+                    recipient_receives = amount
+
+                    # Calculate fee if tag is "transfer"
+                    if tag == "transfer":
+                        current_beta_blocks = len([f for f in os.listdir(DATA_DIR) if f.startswith("beta")])
+                        transfer_fee = calculate_transfer_fee(current_beta_blocks)
+                        
+                        if amount < transfer_fee:
+                            client_socket.send(json.dumps({"status": "error", "message": "Transfer miktarı ücretten küçük"}).encode())
+                            continue
+                        
+                        recipient_receives = amount - transfer_fee
+
+                    # Deduct the full amount from sender
                     sender_data["baklava_balance"][BAKLAVA_TOKEN_ID] -= amount
                     with open(sender_path, "w") as f:
                         json.dump(sender_data, f, indent=4)
+
+                    # Update recipient's balance
+                    recipient_path = os.path.join(WALLETS_DIR, f"{recipient}.json")
+                    if os.path.exists(recipient_path):
+                        with open(recipient_path, "r") as f:
+                            recipient_data = json.load(f)
+                        recipient_data["baklava_balance"][BAKLAVA_TOKEN_ID] = recipient_data["baklava_balance"].get(BAKLAVA_TOKEN_ID, 0) + recipient_receives
+                    else:
+                        recipient_data = {
+                            "address": recipient,
+                            "baklava_balance": {BAKLAVA_TOKEN_ID: recipient_receives}
+                        }
+
+                    with open(recipient_path, "w") as f:
+                        json.dump(recipient_data, f, indent=4)
+
+                    # Transfer fee to foundation if applicable
+                    if transfer_fee > 0:
+                        transfer_fee_to_foundation(transfer_fee)
+                        print(f"💸 Transfer ücreti ({transfer_fee}) Baklava Foundation cüzdanına aktarıldı.")
 
                     # Alıcının bakiyesini güncelle
                     recipient_path = os.path.join(WALLETS_DIR, f"{recipient}.json")
@@ -336,7 +371,7 @@ def handle_client(client_socket, client_address):
                         sender=sender,  # Gönderen adresi
                         recipient=recipient,  # Alıcı adresi
                         amount=amount,  # Transfer miktarı
-                        tag="transfer"  # İşlem türü
+                        tag=tag  # İşlem türü
                     )
                     security_block = SecurityBlock(prev_hashes[1])
                     
@@ -351,12 +386,12 @@ def handle_client(client_socket, client_address):
                     save_block(security_block, "security")
                     save_block(beta_block, "beta")
                     
-                    # İstemciye başarılı yanıt gönder
                     response = {
                         "status": "success",
                         "message": "Transfer başarılı",
                         "sender_balance": sender_data["baklava_balance"].get(BAKLAVA_TOKEN_ID, 0),
-                        "recipient_balance": recipient_data["baklava_balance"].get(BAKLAVA_TOKEN_ID, 0)
+                        "recipient_balance": recipient_data["baklava_balance"].get(BAKLAVA_TOKEN_ID, 0),
+                        "transfer_fee": transfer_fee if tag == "transfer" else 0  # Ücret bilgisini ekle
                     }
                     client_socket.send(json.dumps(response).encode('utf-8'))
                     continue
@@ -432,7 +467,7 @@ def save_block(block, prefix):
         json.dump(block.to_dict(), f, indent=4)
 
 def start_server():
-    host = '192.168.1.106'  # Sunucunun IP adresi
+    host = '192.168.224.139'  # Sunucunun IP adresi
     port = 5555             # Sunucunun portu
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

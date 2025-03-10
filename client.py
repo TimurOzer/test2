@@ -39,7 +39,7 @@ def calculate_file_hash(filename):
 
 def safe_update_client():
     try:
-        host = '192.168.1.106'
+        host = '192.168.224.139'
         port = 5555
 
         # Create a separate socket for updates
@@ -130,7 +130,7 @@ def transfer_menu(client_socket):
 
 
 def start_client():
-    host = '192.168.1.106'
+    host = '192.168.224.139'
     port = 5555
 
     while True:

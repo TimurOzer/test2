@@ -1,7 +1,7 @@
 {
-    "private_key": "a827bf12053710e8b46eb40fd68c78935471a60a2099b5d21e189fe7536b7e46",
-    "public_key": "3a506f0866e0d27266d6c9e7f768ccc23a6b3b9ea2384c050d234e263f2782c7294a21173dd64f644332e2b91bcd53ec6eb3c1ee62d0b3b5a2e11ae5e7023ca6",
-    "address": "1D5RPf1tT1Ae7vn8jZG7C43NDyrKJCEEJc",
+    "private_key": "6504d0732087c072d96da2ad9b2639e36dc25b8fddcde6738b751c6e9950e45a",
+    "public_key": "f1d11ffa49dbe0b9da4b4c895e7cb9b83789c750c81d52039ed80b022f4f07bd514ba6f1ee7b17bcc600970873065fcc5239653394d28cc80c0072737b691db0",
+    "address": "1JNTzBpS1wRn6JPHYW6Bjfw11y3EfXF2rN",
     "baklava_balance": {
         "bklvdc38569a110702c2fed1164021f0539df178": 0
     }

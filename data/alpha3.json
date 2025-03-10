@@ -1,10 +1,10 @@
 {
-    "previous_hash": "f954738c180475b25b65b395e1160e927835437d67376182096f27d5fef8fcbe",
+    "previous_hash": "874ec3f1c301a707daf3dde51d98e47ead5a2b9fab0527596d29e7a68fb938c3",
     "sender": "AIRDROP_SYSTEM",
-    "recipient": "176W2sMHLsUNQZWpQ7UkP66Tvm9B7vSyKe",
+    "recipient": "1J1cwEi7F3nk5P3ngUSQ5JgdxdH7qSqFTH",
     "amount": "1",
     "tag": "airdrop",
-    "timestamp": 1741586304.6940887,
+    "timestamp": 1741598671.4369183,
     "nonce": 0,
-    "block_hash": "521b6a1b3d1f0f13e70c33e97593c64e79d6ed0ae6fe925a4e783dd0608be0b5"
+    "block_hash": "b5da156089a518b0c2e27a072d203bcb6ed96169a5ae4ccaad332da48da4a3f0"
 }

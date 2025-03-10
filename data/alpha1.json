@@ -1,10 +1,10 @@
 {
-    "previous_hash": "00004575db913afa4d046be472268f19cfe351da2745d78a78b80efb6be9dfd8",
+    "previous_hash": "00009c082812b051046ace414a189f79f9ac9d6b162c3cd4e0b12db7d9b44415",
     "sender": "SYSTEM",
-    "recipient": "1N7HkRXgmyVi2j3YHG3tESMyJ7rFfJX5rq",
+    "recipient": "1J1cwEi7F3nk5P3ngUSQ5JgdxdH7qSqFTH",
     "amount": "0",
     "tag": "wallet",
-    "timestamp": 1741586292.5558572,
+    "timestamp": 1741598662.1108723,
     "nonce": 0,
-    "block_hash": "cbcd23f7f80d1df1e58044d5cfa99c16606c9b1710dae24e9ae212a39a81d151"
+    "block_hash": "b4f1d474111d59b0a78e9d3b3ad69ed2cbc0f7f2d187d85a0b99956178c0f7c2"
 }
