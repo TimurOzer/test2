@@ -5,6 +5,7 @@ import hashlib
 import shutil
 import time
 import json
+from wallet import BAKLAVA_TOKEN_ID  # Bu satırı ekleyin
 
 # Sabit Genesis hash değerleri (uygulamanıza göre güncellenmeli)
 GENESIS_NORMAL_HASH = "00002b0487c6a824a33b529bdff43c940c1874e1910a187f85691cdff7a69eda"
@@ -39,7 +40,7 @@ def calculate_file_hash(filename):
 
 def safe_update_client():
     try:
-        host = '192.168.224.139'
+        host = '192.168.1.150'
         port = 5555
 
         # Create a separate socket for updates
@@ -130,7 +131,7 @@ def transfer_menu(client_socket):
 
 
 def start_client():
-    host = '192.168.224.139'
+    host = '192.168.1.150'
     port = 5555
 
     while True:
@@ -239,26 +240,62 @@ def account_menu(client_socket):
     input("Press ENTER to continue...")
 
 # client.py
+# client.py'deki balance_menu fonksiyonunu bu şekilde düzenleyin:
+
 def balance_menu(client_socket):
-    with open("wallet.json", "r") as f:
-        wallet_data = json.load(f)
-    
+    # Yerel cüzdanı yükle
+    try:
+        with open("wallet.json", "r") as f:
+            wallet_data = json.load(f)
+        client_address = wallet_data["address"]
+    except FileNotFoundError:
+        print("❌ Cüzdan dosyası bulunamadı. Önce cüzdan oluşturun!")
+        input("Devam etmek için ENTER'a basın...")
+        return
+
     # Sunucudan güncel bakiyeyi iste
     client_socket.send(json.dumps({
         "action": "get_balance",
-        "address": wallet_data["address"]
+        "address": client_address
     }).encode())
-    
+
+    # Sunucu yanıtını al
     response = client_socket.recv(4096).decode()
+    print(f"Sunucudan gelen yanıt: {response}")  # Debug için
+
+    if not response.strip():
+        print("❌ Sunucudan boş yanıt alındı.")
+        input("Devam etmek için ENTER'a basın...")
+        return
+
     try:
         response_data = json.loads(response)
+        
         if response_data.get("status") == "success":
-            balance = response_data["balance"].get(BAKLAVA_TOKEN_ID, 0)
-            print(f"Bakiyeniz: {balance} BAKL")
+            server_balance = response_data["balance"].get(BAKLAVA_TOKEN_ID, 0)
+            
+            # Yerel cüzdanı güncelle
+            wallet_data["baklava_balance"][BAKLAVA_TOKEN_ID] = server_balance
+            with open("wallet.json", "w") as f:
+                json.dump(wallet_data, f, indent=4)
+            
+            print(f"✅ Güncel Bakiye: {server_balance} BAKL")
+        
+        elif response_data.get("message") == "Cüzdan bulunamadı":
+            print("❌ Sunucuda cüzdanınız bulunamadı! Yeni cüzdan oluşturun.")
+            if os.path.exists("wallet.json"):
+                os.remove("wallet.json")
+        
         else:
-            print("❌ Bakiye sorgulama hatası:", response_data.get("message"))
-    except json.JSONDecodeError:
-        print("❌ Geçersiz sunucu yanıtı.")
+            print(f"❌ Hata: {response_data.get('message', 'Bilinmeyen hata')}")
+    
+    except json.JSONDecodeError as e:
+        print(f"❌ Geçersiz sunucu yanıtı: {e}")
+        print(f"Alınan yanıt: {response}")
+    except Exception as e:
+        print(f"❌ Beklenmeyen hata: {e}")
+
+    input("Devam etmek için ENTER'a basın...")
 
 def wallet_menu(client_socket):
     print("\n--- WALLET MENU ---")
@@ -306,26 +343,36 @@ def airdrop_menu(client_socket):
         print("\n🪂 Airdrop requested...")
         # Sunucuya airdrop isteği gönder
         client_socket.send("REQUEST_AIRDROP".encode('utf-8'))
-        
-        # Sunucuya alıcı adresini gönder (kendi cüzdan adresiniz)
-        with open("wallet.json", "r") as f:
-            wallet_data = json.load(f)
-        client_socket.send(wallet_data["address"].encode('utf-8'))
 
-        # Yanıtı al
+        # Sunucudan gelen yanıtı al
         response = client_socket.recv(4096).decode('utf-8')
-        try:
-            response_data = json.loads(response)
-            if response_data.get("status") == "success":
-                print("🎉 Airdrop successful! 1 Baklava added to your wallet.")
-                # Yerel cüzdanı güncelle (isteğe bağlı, sunucu zaten güncelledi)
-                wallet_data["baklava_balance"][BAKLAVA_TOKEN_ID] += 1
-                with open("wallet.json", "w") as f:
-                    json.dump(wallet_data, f, indent=4)
-            else:
-                print("❌ Airdrop failed:", response_data.get("message"))
-        except json.JSONDecodeError:
-            print("❌ Geçersiz sunucu yanıtı.")
+        print(f"Sunucudan gelen yanıt: {response}")  # Debug için
+
+        if response == "AIRDROP_RECIPIENT_REQUEST":
+            # Sunucuya alıcı adresini gönder (kendi cüzdan adresiniz)
+            with open("wallet.json", "r") as f:
+                wallet_data = json.load(f)
+            client_socket.send(wallet_data["address"].encode('utf-8'))
+
+            # Airdrop başarılı mesajını al
+            response = client_socket.recv(4096).decode('utf-8')
+            print(f"Sunucudan gelen yanıt: {response}")  # Debug için
+
+            try:
+                response_data = json.loads(response)
+                if response_data.get("status") == "success":
+                    print("🎉 Airdrop successful! 1 Baklava added to your wallet.")
+                    # Yerel cüzdanı güncelle (isteğe bağlı, sunucu zaten güncelledi)
+                    wallet_data["baklava_balance"][BAKLAVA_TOKEN_ID] += 1
+                    with open("wallet.json", "w") as f:
+                        json.dump(wallet_data, f, indent=4)
+                else:
+                    print("❌ Airdrop failed:", response_data.get("message"))
+            except json.JSONDecodeError:
+                print("❌ Geçersiz sunucu yanıtı.")
+        else:
+            print("❌ Beklenmeyen sunucu yanıtı:", response)
+
         input("Press ENTER to continue...")
 
 def mine_menu(client_socket):

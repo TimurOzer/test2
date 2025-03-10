@@ -1,6 +1,7 @@
 import socket
 import threading
 import os
+import shutil
 import json
 from genesis_block import GenesisBlock, TOKEN_ADDRESS, MAX_SUPPLY  # Genesis Block sınıfı ve sabitler
 from wallet import Wallet, load_wallet  # load_wallet fonksiyonunu da import edin
@@ -220,7 +221,7 @@ def handle_client(client_socket, client_address):
 
                     # Alıcının adresini istemciden al (örneğin, airdrop isteği yapanın adresi)
                     client_socket.send("AIRDROP_RECIPIENT_REQUEST".encode('utf-8'))
-                    recipient_address = client_socket.recv(1024).decode('utf-8')
+                    recipient_address = client_socket.recv(1024).decode('utf-8')  # Client'ın yanıtını bekleyin
 
                     # Alıcının cüzdanını güncelle
                     recipient_path = os.path.join(WALLETS_DIR, f"{recipient_address}.json")
@@ -396,14 +397,25 @@ def handle_client(client_socket, client_address):
                     client_socket.send(json.dumps(response).encode('utf-8'))
                     continue
                     
+                # server.py'deki "get_balance" işlemini bu şekilde güncelleyin:
+
                 elif data.get("action") == "get_balance":
                     address = data["address"]
                     wallet_path = os.path.join(WALLETS_DIR, f"{address}.json")
                     
+                    if not os.path.exists(wallet_path):
+                        # Eğer wallet.json ana dizinde varsa onu kullan
+                        main_wallet_path = os.path.join(os.getcwd(), "wallet.json")
+                        if os.path.exists(main_wallet_path):
+                            shutil.copy(main_wallet_path, wallet_path)  # Sunucuya kopyala
+                    
                     if os.path.exists(wallet_path):
-                        with open(wallet_path, "r") as f:
-                            wallet_data = json.load(f)
-                        client_socket.send(json.dumps({"status": "success", "balance": wallet_data["baklava_balance"]}).encode())
+                        try:
+                            with open(wallet_path, "r") as f:
+                                wallet_data = json.load(f)
+                            client_socket.send(json.dumps({"status": "success", "balance": wallet_data["baklava_balance"]}).encode())
+                        except Exception as e:
+                            client_socket.send(json.dumps({"status": "error", "message": f"Cüzdan okunurken hata: {e}"}).encode())
                     else:
                         client_socket.send(json.dumps({"status": "error", "message": "Cüzdan bulunamadı"}).encode())
                     continue
@@ -467,7 +479,7 @@ def save_block(block, prefix):
         json.dump(block.to_dict(), f, indent=4)
 
 def start_server():
-    host = '192.168.224.139'  # Sunucunun IP adresi
+    host = '192.168.1.150'  # Sunucunun IP adresi
     port = 5555             # Sunucunun portu
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
