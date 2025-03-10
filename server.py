@@ -6,6 +6,7 @@ from genesis_block import GenesisBlock, TOKEN_ADDRESS, MAX_SUPPLY  # Genesis Blo
 from wallet import Wallet, load_wallet  # load_wallet fonksiyonunu da import edin
 from baklava_foundation import BaklavaFoundationWallet  # Baklava Foundation cüzdanını import edin
 from wallet_block import WalletBlock
+from wallet import BAKLAVA_TOKEN_ID
 
 # Yeni blok sınıflarını import ediyoruz
 from alpha_block import AlphaBlock
@@ -14,6 +15,15 @@ from beta_block import BetaBlock
 
 DATA_DIR = "data"  # Veri klasörü
 GENESIS_BLOCK_FILE = os.path.join(DATA_DIR, "genesis_block.json")  # Dosya yolu
+WALLETS_DIR = os.path.join(DATA_DIR, "wallets")  # Yeni eklendi
+BAKLAVA_TOKEN_ID = "bklvdc38569a110702c2fed1164021f0539df178"
+
+def ensure_data_dir():
+    """Klasörleri oluştur"""
+    if not os.path.exists(DATA_DIR):
+        os.makedirs(DATA_DIR)
+    if not os.path.exists(WALLETS_DIR):  # Yeni eklendi
+        os.makedirs(WALLETS_DIR)
 
 def ensure_data_dir():
     """Eğer data klasörü yoksa, oluşturur."""
@@ -127,11 +137,13 @@ def handle_client(client_socket, client_address):
 
         while True:
             message = client_socket.recv(4096).decode('utf-8')
-            if message == "GET_PREV_HASHES":
-                send_prev_hashes(client_socket)
-                continue  # veya döngüyü kesmeden diğer mesajları bekleyin
             if not message:
                 break
+                
+            if message == "GET_PREV_HASHES":
+                send_prev_hashes(client_socket)
+                continue  # veya döngüyü kesmeden diğer mesajları bekleyin  
+            # server.py'de "CREATE_WALLET" işlemi sırasında:
 
             if message == "CREATE_WALLET":
                 print("🏦 Cüzdan oluşturma talebi alındı.")
@@ -142,17 +154,27 @@ def handle_client(client_socket, client_address):
                     "address": new_wallet.address,
                     "baklava_balance": new_wallet.baklava_balance  # Bakiyeyi ekleyin
                 }
+
+                # Cüzdanı wallets klasörüne kaydet
+                os.makedirs(WALLETS_DIR, exist_ok=True)
+                wallet_path = os.path.join(WALLETS_DIR, f"{new_wallet.address}.json")
+                with open(wallet_path, "w") as f:
+                    json.dump(wallet_data, f, indent=4)
+                print(f"✅ Cüzdan {new_wallet.address}.json olarak kaydedildi.")
+
+                # İstemciye cüzdan bilgilerini gönder
                 client_socket.send(json.dumps(wallet_data).encode('utf-8'))
-                
+
                 # Alpha Block oluşturma
                 prev_normal_hash, prev_security_hash = get_previous_hashes()  # Önceki hash'leri al
                 alpha_block = AlphaBlock(
                     previous_hash=prev_normal_hash,  # Beta Block'un hash'i
+                    sender="SYSTEM",  # Cüzdan oluşturma işlemi sistem tarafından yapıldı
                     recipient=new_wallet.address,    # Cüzdan adresi
                     amount="0",                      # Cüzdan oluşturma işlemi için amount=0
                     tag="wallet"                     # Tag="wallet"
                 )
-                
+
                 # Alpha Block'u kaydet
                 alpha_num = get_next_block_number("alpha")
                 alpha_filename = os.path.join(DATA_DIR, f"alpha{alpha_num}.json")
@@ -178,29 +200,49 @@ def handle_client(client_socket, client_address):
                 with open(beta_filename, "w") as f:
                     json.dump(beta_block.to_dict(), f, indent=4)
                 print(f"✅ Beta Block oluşturuldu ve kaydedildi: {beta_filename}")
-
                 continue
-
+                
+            # server.py'de "REQUEST_AIRDROP" işlemi içine ekleyin:
             if message == "REQUEST_AIRDROP":
                 print("🪂 Airdrop talebi alındı.")
-                # Genesis Block'dan airdrop rezervini kontrol et
+                
+                # Genesis Block'dan airdrop rezervini al
                 with open(GENESIS_BLOCK_FILE, "r") as f:
                     genesis_data = json.load(f)
-                airdrop_reserve = genesis_data.get("airdrop", 0)
+                airdrop_reserve = genesis_data.get("airdrop_reserve", 0)  # Varsayılan değer 0
 
                 if airdrop_reserve >= 1:
-                    # Airdrop rezervinden 1 azalt
-                    genesis_data["airdrop"] -= 1
+                    # Airdrop rezervini güncelle
+                    genesis_data["airdrop_reserve"] -= 1
                     with open(GENESIS_BLOCK_FILE, "w") as f:
                         json.dump(genesis_data, f, indent=4)
-                    print("✅ Airdrop rezervi güncellendi.")
 
-                    # Alpha ve Security Block oluştur
+                    # Alıcının adresini istemciden al (örneğin, airdrop isteği yapanın adresi)
+                    client_socket.send("AIRDROP_RECIPIENT_REQUEST".encode('utf-8'))
+                    recipient_address = client_socket.recv(1024).decode('utf-8')
+
+                    # Alıcının cüzdanını güncelle
+                    recipient_path = os.path.join(WALLETS_DIR, f"{recipient_address}.json")
+                    if os.path.exists(recipient_path):
+                        with open(recipient_path, "r") as f:
+                            recipient_data = json.load(f)
+                        recipient_data["baklava_balance"][BAKLAVA_TOKEN_ID] += 1
+                    else:
+                        recipient_data = {
+                            "address": recipient_address,
+                            "baklava_balance": {BAKLAVA_TOKEN_ID: 1}
+                        }
+
+                    with open(recipient_path, "w") as f:
+                        json.dump(recipient_data, f, indent=4)
+
+                    # Blokları oluştur ve kaydet
                     prev_normal_hash, prev_security_hash = get_previous_hashes()
                     alpha_block = AlphaBlock(
-                        previous_hash=prev_normal_hash,
-                        recipient="AIRDROP_RECIPIENT",  # Airdrop alıcısı (istemci cüzdanı)
-                        amount="1",  # 1 Baklava
+                        previous_hash=prev_normal_hash,  # Önceki bloğun hash'i
+                        sender="AIRDROP_SYSTEM",  # Airdrop sistem tarafından yapıldı
+                        recipient=recipient_address,  # Alıcı adresi
+                        amount="1",  # Airdrop miktarı
                         tag="airdrop"  # İşlem türü
                     )
                     security_block = SecurityBlock(prev_security_hash)
@@ -220,7 +262,7 @@ def handle_client(client_socket, client_address):
                     print(f"✅ Alpha Block kaydedildi: {alpha_filename}")
                     print(f"✅ Security Block kaydedildi: {security_filename}")
 
-                    # Beta Block oluştur
+                    # Düzeltilmiş hali:
                     beta_block = BetaBlock(
                         prev_alpha_hash=alpha_block.block_hash,
                         prev_security_hash=security_block.security_hash
@@ -247,10 +289,92 @@ def handle_client(client_socket, client_address):
                     client_socket.send(json.dumps(response).encode('utf-8'))
                 continue
 
-            # Transfer işlemi kontrolü
             try:
                 data = json.loads(message)
+                
+                # server.py'de transfer işlemi sırasında:
+
                 if data.get("action") == "transfer":
+                    sender = data["sender"]
+                    recipient = data["recipient"]
+                    amount = data["amount"]
+
+                    # Gönderenin bakiyesini kontrol et
+                    sender_path = os.path.join(WALLETS_DIR, f"{sender}.json")
+                    with open(sender_path, "r") as f:
+                        sender_data = json.load(f)
+                    
+                    # Bakiyeyi BAKLAVA_TOKEN_ID ile kontrol et
+                    if sender_data["baklava_balance"].get(BAKLAVA_TOKEN_ID, 0) < amount:
+                        client_socket.send(json.dumps({"status": "error", "message": "Yetersiz bakiye"}).encode())
+                        continue
+
+                    # Bakiyeyi güncelle
+                    sender_data["baklava_balance"][BAKLAVA_TOKEN_ID] -= amount
+                    with open(sender_path, "w") as f:
+                        json.dump(sender_data, f, indent=4)
+
+                    # Alıcının bakiyesini güncelle
+                    recipient_path = os.path.join(WALLETS_DIR, f"{recipient}.json")
+                    if os.path.exists(recipient_path):
+                        with open(recipient_path, "r") as f:
+                            recipient_data = json.load(f)
+                        recipient_data["baklava_balance"][BAKLAVA_TOKEN_ID] = recipient_data["baklava_balance"].get(BAKLAVA_TOKEN_ID, 0) + amount
+                    else:
+                        recipient_data = {
+                            "address": recipient,
+                            "baklava_balance": {BAKLAVA_TOKEN_ID: amount}
+                        }
+
+                    with open(recipient_path, "w") as f:
+                        json.dump(recipient_data, f, indent=4)
+                                        
+                    # Blokları oluştur ve kaydet
+                    prev_hashes = get_previous_hashes()
+                    alpha_block = AlphaBlock(
+                        previous_hash=prev_hashes[0],  # Önceki bloğun hash'i
+                        sender=sender,  # Gönderen adresi
+                        recipient=recipient,  # Alıcı adresi
+                        amount=amount,  # Transfer miktarı
+                        tag="transfer"  # İşlem türü
+                    )
+                    security_block = SecurityBlock(prev_hashes[1])
+                    
+                    # Düzeltilmiş hali:
+                    beta_block = BetaBlock(
+                        prev_alpha_hash=alpha_block.block_hash,
+                        prev_security_hash=security_block.security_hash
+                    )
+                    
+                    # Blokları kaydet
+                    save_block(alpha_block, "alpha")
+                    save_block(security_block, "security")
+                    save_block(beta_block, "beta")
+                    
+                    # İstemciye başarılı yanıt gönder
+                    response = {
+                        "status": "success",
+                        "message": "Transfer başarılı",
+                        "sender_balance": sender_data["baklava_balance"].get(BAKLAVA_TOKEN_ID, 0),
+                        "recipient_balance": recipient_data["baklava_balance"].get(BAKLAVA_TOKEN_ID, 0)
+                    }
+                    client_socket.send(json.dumps(response).encode('utf-8'))
+                    continue
+                    
+                elif data.get("action") == "get_balance":
+                    address = data["address"]
+                    wallet_path = os.path.join(WALLETS_DIR, f"{address}.json")
+                    
+                    if os.path.exists(wallet_path):
+                        with open(wallet_path, "r") as f:
+                            wallet_data = json.load(f)
+                        client_socket.send(json.dumps({"status": "success", "balance": wallet_data["baklava_balance"]}).encode())
+                    else:
+                        client_socket.send(json.dumps({"status": "error", "message": "Cüzdan bulunamadı"}).encode())
+                    continue
+                    
+                # Alpha ve Security bloklarını içeren transfer işlemi kontrolü
+                elif data.get("action") == "transfer":
                     print("💸 Transfer talebi alındı.")
                     alpha_data = data.get("alpha")
                     security_data = data.get("security")
@@ -300,6 +424,12 @@ def handle_client(client_socket, client_address):
     finally:
         print(f"❌ {client_address} bağlantısı kesildi.")
         client_socket.close()
+
+def save_block(block, prefix):
+    block_num = get_next_block_number(prefix)
+    filename = os.path.join(DATA_DIR, f"{prefix}{block_num}.json")
+    with open(filename, "w") as f:
+        json.dump(block.to_dict(), f, indent=4)
 
 def start_server():
     host = '192.168.1.106'  # Sunucunun IP adresi

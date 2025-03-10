@@ -28,6 +28,16 @@ class Wallet:
         vk = sk.verifying_key
         return vk.to_string().hex()
 
+    def save_to_server(self):
+        """Cüzdanı server'a kaydet"""
+        wallet_path = os.path.join(WALLETS_DIR, f"{self.address}.json")
+        wallet_data = {
+            "address": self.address,
+            "baklava_balance": self.baklava_balance
+        }
+        with open(wallet_path, "w") as f:
+            json.dump(wallet_data, f, indent=4)
+
     def generate_address(self):
         """Genel anahtardan SHA-256 ve Base58 ile cüzdan adresi üretir."""
         public_key_bytes = bytes.fromhex(self.public_key)

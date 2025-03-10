@@ -17,6 +17,7 @@ class GenesisBlock:
         self.nonce = nonce
         self.block_hash = block_hash
         self.security_hash = security_hash
+        self.airdrop_reserve = 50000000
 
     def to_dict(self):
         """Genesis blok verilerini sözlük formatına çevirir."""
@@ -28,7 +29,8 @@ class GenesisBlock:
             "prev_hash_2": self.prev_hash_2,
             "nonce": self.nonce,
             "block_hash": self.block_hash,
-            "security_hash": self.security_hash
+            "security_hash": self.security_hash,
+            "airdrop_reserve": self.airdrop_reserve
         }
 
     @classmethod

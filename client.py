@@ -92,61 +92,41 @@ def safe_update_client():
             shutil.move('client_old.py', 'client.py')
         return False
 
+# client.py'de transfer_menu fonksiyonunda:
 def transfer_menu(client_socket):
-    while True:
-        print("\n--- TRANSFER MENU ---")
-        print("1. Test Transfer")
-        print("2. Go Back")
-        
-        choice = input("Enter your choice: ")
-        
-        if choice == '1':
-            print("\n🔄 Transfer process is under testing...")
-            recipient = input("Enter recipient address: ")
-            amount = input("Enter transfer amount: ")
-            
-            # GET_PREV_HASHES cevabını alıyoruz:
-            client_socket.send("GET_PREV_HASHES".encode('utf-8'))
-            response = json.loads(client_socket.recv(4096).decode('utf-8'))
+    print("\n--- TRANSFER MENU ---")
+    recipient = input("Alıcı adresi: ")
+    amount = float(input("Miktar: "))
 
-            last_beta_hash = response.get("last_beta_hash")
-            previous_hash = GENESIS_NORMAL_HASH if last_beta_hash is None else last_beta_hash  # Alpha block için
- 
-            prev_security_value = response.get("prev_security_hash")
-            prev_security_value = GENESIS_SECURITY_HASH if prev_security_value is None else prev_security_value
-
-            tag = "transaction"
-
-            from alpha_block import AlphaBlock
-            from security_block import SecurityBlock
-
-            # Yeni Alpha Block: previous_hash olarak Beta block'un block_hash'i
-            alpha_block = AlphaBlock(previous_hash, recipient, amount, tag)
-            # Yeni Security Block: input olarak Beta block'un computed security hash
-            security_block = SecurityBlock(prev_security_value)
-
-            transfer_data = {
-                "action": "transfer",
-                "alpha": alpha_block.to_dict(),
-                "security": security_block.to_dict()
-            }
-            
-            client_socket.send(json.dumps(transfer_data).encode('utf-8'))
-            
-            # Transfer işlemi tamamlandığında sunucudan Beta Block bilgisini alıp kaydediyoruz
-            beta_response = client_socket.recv(4096).decode('utf-8')
-            beta_data = json.loads(beta_response)
-            with open("latest_block.json", "w") as f:
-                json.dump(beta_data, f, indent=4)
-            
-            print("✉️ Transfer completed and beta block updated.")
-            input("Press ENTER to continue...")
-        
-        elif choice == '2':
-            return
-        
+    # Cüzdan bilgilerini yükle
+    with open("wallet.json", "r") as f:
+        wallet_data = json.load(f)
+    
+    # Transfer verisini hazırla
+    transfer_data = {
+        "action": "transfer",
+        "sender": wallet_data["address"],
+        "recipient": recipient,
+        "amount": amount
+    }
+    
+    # Sunucuya gönder
+    client_socket.send(json.dumps(transfer_data).encode())
+    
+    # Yanıtı al
+    response = client_socket.recv(4096).decode()
+    if not response.strip():
+        print("❌ Sunucudan boş yanıt alındı.")
+        return
+    
+    try:
+        response_data = json.loads(response)
+        if response_data.get("status") == "success":
+            print(f"✅ Transfer başarılı! Yeni bakiyeniz: {response_data.get('sender_balance', 0)}")
         else:
-            print("Invalid choice. Please try again.")
+            print(f"❌ Transfer başarısız: {response_data.get('message', 'Bilinmeyen hata')}")
+    except json.JSONDecodeError:
+        print(f"❌ Geçersiz yanıt: {response}")
 
 
 def start_client():
@@ -258,25 +238,62 @@ def account_menu(client_socket):
     print("This feature is still under development.")
     input("Press ENTER to continue...")
 
+# client.py
 def balance_menu(client_socket):
-    print("\n--- BALANCE MENU ---")
-    print("This feature is still under development.")
-    input("Press ENTER to continue...")
+    with open("wallet.json", "r") as f:
+        wallet_data = json.load(f)
+    
+    # Sunucudan güncel bakiyeyi iste
+    client_socket.send(json.dumps({
+        "action": "get_balance",
+        "address": wallet_data["address"]
+    }).encode())
+    
+    response = client_socket.recv(4096).decode()
+    try:
+        response_data = json.loads(response)
+        if response_data.get("status") == "success":
+            balance = response_data["balance"].get(BAKLAVA_TOKEN_ID, 0)
+            print(f"Bakiyeniz: {balance} BAKL")
+        else:
+            print("❌ Bakiye sorgulama hatası:", response_data.get("message"))
+    except json.JSONDecodeError:
+        print("❌ Geçersiz sunucu yanıtı.")
 
 def wallet_menu(client_socket):
     print("\n--- WALLET MENU ---")
     print("Creating wallet on server...")
-    # Sunucuya wallet oluşturma isteği gönderiyoruz.
     client_socket.send("CREATE_WALLET".encode('utf-8'))
-    # Server tarafından oluşturulan wallet bilgilerini alıyoruz.
     wallet_response = client_socket.recv(4096).decode('utf-8')
-    wallet_data = json.loads(wallet_response)
-    # Alınan wallet verileriyle wallet.json dosyasını oluşturuyoruz.
-    with open("wallet.json", "w") as f:
-        json.dump(wallet_data, f, indent=4)
-    print("🏦 Wallet created and saved as wallet.json")
-    print("Address:", wallet_data.get("address"))
+    
+    # Yanıtın boş olup olmadığını kontrol et
+    if not wallet_response.strip():
+        print("❌ Sunucudan boş yanıt alındı.")
+        input("Press ENTER to continue...")
+        return
+    
+    try:
+        wallet_data = json.loads(wallet_response)
+        # Hata mesajı kontrolü
+        if "status" in wallet_data and wallet_data["status"] == "error":
+            print(f"❌ {wallet_data['message']}")
+            input("Press ENTER to continue...")
+            return
+            
+        with open("wallet.json", "w") as f:
+            json.dump(wallet_data, f, indent=4)
+        print("🏦 Wallet created and saved as wallet.json")
+        print("Address:", wallet_data.get("address"))
+    except json.JSONDecodeError as e:
+        print(f"❌ Geçersiz yanıt: {e}")
+        print("Alınan yanıt:", wallet_response)
+    except Exception as e:
+        print(f"❌ Hata: {e}")
     input("Press ENTER to continue...")
+
+# client.py'de airdrop_menu fonksiyonunu düzenleyin:
+
+# client.py'de airdrop_menu fonksiyonunu güncelleyin:
 
 def airdrop_menu(client_socket):
     print("\n--- AIRDROP MENU ---")
@@ -289,28 +306,27 @@ def airdrop_menu(client_socket):
         print("\n🪂 Airdrop requested...")
         # Sunucuya airdrop isteği gönder
         client_socket.send("REQUEST_AIRDROP".encode('utf-8'))
+        
+        # Sunucuya alıcı adresini gönder (kendi cüzdan adresiniz)
+        with open("wallet.json", "r") as f:
+            wallet_data = json.load(f)
+        client_socket.send(wallet_data["address"].encode('utf-8'))
 
-        # Sunucudan gelen yanıtı al
+        # Yanıtı al
         response = client_socket.recv(4096).decode('utf-8')
-        response_data = json.loads(response)
-
-        if response_data.get("status") == "success":
-            # Airdrop başarılı, cüzdan dosyasını güncelle
-            with open("wallet.json", "r") as f:
-                wallet_data = json.load(f)
-            wallet_data["baklava_balance"]["bklvdc38569a110702c2fed1164021f0539df178"] += 1
-            with open("wallet.json", "w") as f:
-                json.dump(wallet_data, f, indent=4)
-            print("🎉 Airdrop successful! 1 Baklava added to your wallet.")
-        else:
-            print("❌ Airdrop failed:", response_data.get("message"))
+        try:
+            response_data = json.loads(response)
+            if response_data.get("status") == "success":
+                print("🎉 Airdrop successful! 1 Baklava added to your wallet.")
+                # Yerel cüzdanı güncelle (isteğe bağlı, sunucu zaten güncelledi)
+                wallet_data["baklava_balance"][BAKLAVA_TOKEN_ID] += 1
+                with open("wallet.json", "w") as f:
+                    json.dump(wallet_data, f, indent=4)
+            else:
+                print("❌ Airdrop failed:", response_data.get("message"))
+        except json.JSONDecodeError:
+            print("❌ Geçersiz sunucu yanıtı.")
         input("Press ENTER to continue...")
-
-    elif choice == '2':
-        return
-
-    else:
-        print("Invalid choice. Please try again.")
 
 def mine_menu(client_socket):
     while True:

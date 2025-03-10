@@ -1,8 +1,10 @@
 {
-    "previous_hash": "61d17f3d16565fe5a19cd1e6d2ae637296ea404e23b9e99797921d1af4c63d9e",
-    "recipient": "AIRDROP_RECIPIENT",
-    "amount": "1",
-    "tag": "airdrop",
-    "timestamp": 1741516983.9619381,
-    "block_hash": "619860dd8111c98a9665327d512c538d43ceedd4b93e1b741068da01297671bc"
+    "previous_hash": "2e00af52e265baa903f74e25b75f3ad907a53ca0805f0a2256b3c94a02566314",
+    "sender": "SYSTEM",
+    "recipient": "176W2sMHLsUNQZWpQ7UkP66Tvm9B7vSyKe",
+    "amount": "0",
+    "tag": "wallet",
+    "timestamp": 1741586296.3785195,
+    "nonce": 0,
+    "block_hash": "dfee56c869b76c0e146db067a2852da8a892f908d42f8692137f285fe5835a24"
 }

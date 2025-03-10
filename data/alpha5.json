@@ -1,0 +1,10 @@
+{
+    "previous_hash": "fc7341b825d16cd73941ed4b39c214552adabf2e083965d77d3cc8242485ecde",
+    "sender": "176W2sMHLsUNQZWpQ7UkP66Tvm9B7vSyKe",
+    "recipient": "1N7HkRXgmyVi2j3YHG3tESMyJ7rFfJX5rq",
+    "amount": 1.0,
+    "tag": "transfer",
+    "timestamp": 1741586335.228861,
+    "nonce": 0,
+    "block_hash": "77ffd0860bb7a04ef6cb429f8c30df415af6f68651c633bebcc187056648c04c"
+}
