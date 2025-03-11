@@ -33,6 +33,32 @@ def ensure_data_dir():
         os.makedirs(DATA_DIR)
         print(f"📁 '{DATA_DIR}' klasörü oluşturuldu.")
 
+def calculate_mining_reward(client_socket):
+    with open(GENESIS_BLOCK_FILE, "r") as f:
+        genesis_data = json.load(f)
+    
+    mining_reserve = genesis_data["mining_reserve"]
+    beta_count = len([f for f in os.listdir(DATA_DIR) if f.startswith("beta")])
+    
+    # Ödül: mining reserve'in %1'i (azalan ödül mekanizması)
+    reward = max(mining_reserve * 0.01, 1)  # Minimum 1 token
+    # Zorluk: Beta blok sayısına göre artan
+    difficulty = 4 + (beta_count // 100)  # Her 100 beta blokunda zorluk +1
+    
+    return {
+        "difficulty": difficulty,
+        "reward": reward,
+        "mining_reserve": mining_reserve
+    }
+
+def update_mining_reserve(reward):
+    with open(GENESIS_BLOCK_FILE, "r+") as f:
+        genesis_data = json.load(f)
+        genesis_data["mining_reserve"] -= reward
+        f.seek(0)
+        json.dump(genesis_data, f, indent=4)
+        f.truncate()
+
 def create_genesis_block():
     """Eğer genesis_block.json yoksa veya geçersizse, yeni bir Genesis Block oluşturur."""
     if not os.path.exists(GENESIS_BLOCK_FILE):
@@ -145,8 +171,67 @@ def handle_client(client_socket, client_address):
             if message == "GET_PREV_HASHES":
                 send_prev_hashes(client_socket)
                 continue  # veya döngüyü kesmeden diğer mesajları bekleyin  
-            # server.py'de "CREATE_WALLET" işlemi sırasında:
-
+            # server.py'de "CREATE_WALLET" işlemi sırasında:           
+            if message == "GET_MINING_INFO":
+                print("🔍 Mining info requested by client")
+                mining_info = calculate_mining_reward(client_socket)
+                print(f"📤 Sending mining info: {mining_info}")
+                client_socket.send(json.dumps(mining_info).encode())
+                continue
+            # SUBMIT_MINING mesajını ana döngüye ekleyin
+            if message.startswith("SUBMIT_MINING"):
+                print(f"⛏️ Mining submission received: {message}")
+                try:
+                    _, address, nonce = message.split("|")
+                    mining_info = calculate_mining_reward(client_socket)
+                    
+                    # Proof-of-Work kontrolü
+                    if int(nonce) % (10**mining_info["difficulty"]) == 0:
+                        update_mining_reserve(mining_info["reward"])
+                        
+                        # Ödülü cüzdana ekle
+                        wallet_path = os.path.join(WALLETS_DIR, f"{address}.json")
+                        if os.path.exists(wallet_path):
+                            with open(wallet_path, "r+") as f:
+                                wallet_data = json.load(f)
+                                wallet_data["baklava_balance"][BAKLAVA_TOKEN_ID] += mining_info["reward"]
+                                f.seek(0)
+                                json.dump(wallet_data, f, indent=4)
+                                f.truncate()
+                            print(f"💰 Mining reward added to {address}")
+                        else:
+                            print(f"❌ Wallet not found: {address}")
+                            client_socket.send("WALLET_NOT_FOUND".encode())
+                            continue
+                        
+                        # Blokları oluştur
+                        prev_hashes = get_previous_hashes()
+                        alpha_block = AlphaBlock(
+                            previous_hash=prev_hashes[0],
+                            sender="MINING_SYSTEM",
+                            recipient=address,
+                            amount=mining_info["reward"],
+                            tag="mining"
+                        )
+                        security_block = SecurityBlock(prev_hashes[1])
+                        beta_block = BetaBlock(
+                            prev_alpha_hash=alpha_block.block_hash,
+                            prev_security_hash=security_block.security_hash
+                        )
+                        
+                        save_block(alpha_block, "alpha")
+                        save_block(security_block, "security")
+                        save_block(beta_block, "beta")
+                        
+                        client_socket.send("MINING_SUCCESS".encode())
+                        print(f"✅ Mining successful for {address}")
+                    else:
+                        client_socket.send("INVALID_NONCE".encode())
+                        print(f"❌ Invalid nonce: {nonce}")
+                except Exception as e:
+                    print(f"❌ Mining submission error: {e}")
+                    client_socket.send("ERROR".encode())
+                continue
             if message == "CREATE_WALLET":
                 print("🏦 Cüzdan oluşturma talebi alındı.")
                 new_wallet = Wallet()
@@ -419,7 +504,7 @@ def handle_client(client_socket, client_address):
                     else:
                         client_socket.send(json.dumps({"status": "error", "message": "Cüzdan bulunamadı"}).encode())
                     continue
-                    
+                                   
                 # Alpha ve Security bloklarını içeren transfer işlemi kontrolü
                 elif data.get("action") == "transfer":
                     print("💸 Transfer talebi alındı.")
@@ -479,7 +564,7 @@ def save_block(block, prefix):
         json.dump(block.to_dict(), f, indent=4)
 
 def start_server():
-    host = '192.168.1.150'  # Sunucunun IP adresi
+    host = '192.168.1.106'  # Sunucunun IP adresi
     port = 5555             # Sunucunun portu
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

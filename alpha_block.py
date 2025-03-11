@@ -2,7 +2,7 @@ import hashlib
 import time
 
 class AlphaBlock:
-    def __init__(self, previous_hash, sender, recipient, amount, tag):
+    def __init__(self, previous_hash, sender, recipient, amount, tag="general"):
         self.previous_hash = previous_hash  # Önceki bloğun hash'i
         self.sender = sender  # Gönderen adresi
         self.recipient = recipient  # Alıcı adresi

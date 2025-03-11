@@ -18,6 +18,7 @@ class GenesisBlock:
         self.block_hash = block_hash
         self.security_hash = security_hash
         self.airdrop_reserve = 50000000
+        self.mining_reserve = 50000000  # Yeni eklenen kısım
 
     def to_dict(self):
         """Genesis blok verilerini sözlük formatına çevirir."""
@@ -30,7 +31,8 @@ class GenesisBlock:
             "nonce": self.nonce,
             "block_hash": self.block_hash,
             "security_hash": self.security_hash,
-            "airdrop_reserve": self.airdrop_reserve
+            "airdrop_reserve": self.airdrop_reserve,
+            "mining_reserve": self.mining_reserve  # Yeni eklenen kısım
         }
 
     @classmethod
@@ -46,6 +48,8 @@ class GenesisBlock:
             block_hash=data["block_hash"],
             security_hash=data["security_hash"]
         )
+        genesis.mining_reserve = data.get("mining_reserve", 50000000)
+        return genesis
 
     def mine_block(self):
         """Proof of Work (PoW) madencilik işlemi ile uygun hash değerini bulur."""

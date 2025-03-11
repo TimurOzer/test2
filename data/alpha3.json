@@ -1,10 +1,10 @@
 {
-    "previous_hash": "b64b11b29eb8dfd0281cd7d4e2f3b083858707027c295faa5144e755aae2e231",
-    "sender": "AIRDROP_SYSTEM",
-    "recipient": "1MQvMBQ9rbLJG5JjTY81AvvhqiaYgxeerT",
-    "amount": "1",
-    "tag": "airdrop",
-    "timestamp": 1741631098.1777482,
+    "previous_hash": "ce8c7dd6267997cc1c819ec364191a02f06e1c42533c07dbf57c80b6a22bce6c",
+    "sender": "MINING_SYSTEM",
+    "recipient": "1Lq3vFNEgBLEtLVTRgRRnuHcLreTj93RWy",
+    "amount": 500000.0,
+    "tag": "mining",
+    "timestamp": 1741709953.8489747,
     "nonce": 0,
-    "block_hash": "f2e62187d4217a612d86eb2bdf21cc0ca18846be89794a0f1befb40032b33d79"
+    "block_hash": "4f20ddf76ed88479f3698e03bbea87aad7255ced82746e4d9682f05df10b64df"
 }

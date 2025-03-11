@@ -40,7 +40,7 @@ def calculate_file_hash(filename):
 
 def safe_update_client():
     try:
-        host = '192.168.1.150'
+        host = '192.168.1.106'
         port = 5555
 
         # Create a separate socket for updates
@@ -131,7 +131,7 @@ def transfer_menu(client_socket):
 
 
 def start_client():
-    host = '192.168.1.150'
+    host = '192.168.1.106'
     port = 5555
 
     while True:
@@ -376,23 +376,65 @@ def airdrop_menu(client_socket):
         input("Press ENTER to continue...")
 
 def mine_menu(client_socket):
-    while True:
-        print("\n--- MINING MENU ---")
-        print("1. Start Mining")
-        print("2. Go Back")
+    print("\n--- MINING MENU ---")
+    
+    # Sunucudan mining bilgilerini al
+    client_socket.send("GET_MINING_INFO".encode())
+    print("📥 Waiting for mining info from server...")
+    
+    try:
+        # Zaman aşımı ekleyin (örneğin 10 saniye)
+        client_socket.settimeout(20)  # Zaman aşımını 20 saniyeye çıkar
+        response = client_socket.recv(4096).decode()
+        print(f"📨 Received response: {response}")
         
-        choice = input("Enter your choice: ")
-        
-        if choice == '1':
-            print("\n🚧 Mining is under development.")
-            print("This is a demo screen. Real mining operations are not performed yet.")
-            input("Press ENTER to continue...")
-        
-        elif choice == '2':
+        if not response:
+            print("❌ No response received from server")
             return
         
-        else:
-            print("Invalid choice. Please try again.")
+        mining_info = json.loads(response)
+        print(f"🔨 Current Difficulty: {mining_info['difficulty']} (0'lar)")
+        print(f"💰 Block Reward: {mining_info['reward']:.2f} BAKL")
+        print(f"🏦 Mining Reserve: {mining_info['mining_reserve']} BAKL")
+        
+        if input("Start mining? (y/n): ").lower() != 'y':
+            return
+        
+        print("⛏️ Mining started... (Press CTRL+C to stop)")
+        nonce = 0
+        start_time = time.time()
+        
+        try:
+            while True:
+                # Her 10 saniyede bir durum güncellemesi
+                if time.time() - start_time > 10:
+                    print(f"⏳ Mining... Nonce: {nonce}")
+                    start_time = time.time()
+                
+                # Basit PoW algoritması
+                if nonce % (10**mining_info['difficulty']) == 0:
+                    print(f"✅ Valid nonce found: {nonce}")
+                    with open("wallet.json") as f:
+                        wallet = json.load(f)
+                    client_socket.send(f"SUBMIT_MINING|{wallet['address']}|{nonce}".encode())
+                    
+                    # Yanıt için ek zaman aşımı
+                    client_socket.settimeout(20)
+                    result = client_socket.recv(1024).decode()
+                    print("🏆 Mining successful!" if result == "MINING_SUCCESS" else f"❌ Server response: {result}")
+                    return
+                
+                nonce += 1
+        
+        except KeyboardInterrupt:
+            print("⏹ Mining stopped")
+    
+    except socket.timeout:
+        print("❌ Server did not respond in time.")
+    except json.JSONDecodeError:
+        print("❌ Invalid response from server")
+    except Exception as e:
+        print(f"❌ Error: {e}")
 
 # Check for updates
 if __name__ == "__main__":
