@@ -140,21 +140,32 @@ def start_client():
             client_socket.connect((host, port))
             print(f"✅ Connected to server: {host}:{port}")
 
-            # Send handshake message
+            # El sıkışma mesajı
             client_socket.send("HELLO".encode('utf-8'))
 
-            # Receive update status from the server
+            # Sunucudan güncelleme durumunu al
             update_status = client_socket.recv(1024).decode('utf-8')
             if update_status != "UPDATE_NOT_NEEDED":
-                print("Update message:", update_status)
+                print("Güncelleme mesajı:", update_status)
             break
 
         except ConnectionRefusedError:
-            print("❌ Server is currently offline, please try again later.")
+            print("❌ Sunucu şu anda kapalı, lütfen daha sonra tekrar deneyin.")
             time.sleep(5)
         except Exception as e:
-            print(f"❌ Error occurred: {e}")
+            print(f"❌ Hata oluştu: {e}")
             time.sleep(5)
+
+    # Yeni eklenen cüzdan kontrolü
+    if not os.path.exists("wallet.json"):
+        print("\n⚠️ Cüzdan bulunamadı!")
+        create_choice = input("Yeni cüzdan oluşturmak istiyor musunuz? (E/H): ").strip().lower()
+        if create_choice == 'e':
+            wallet_menu(client_socket)  # Cüzdan oluşturma menüsüne yönlendir
+        else:
+            print("❌ Cüzdan olmadan devam edilemez. Çıkılıyor...")
+            client_socket.close()
+            sys.exit()
 
     # Continuous connection loop
     try:
@@ -298,8 +309,19 @@ def balance_menu(client_socket):
     input("Devam etmek için ENTER'a basın...")
 
 def wallet_menu(client_socket):
-    print("\n--- WALLET MENU ---")
-    print("Creating wallet on server...")
+    # Eğer cüzdan zaten varsa uyarı ver
+    if os.path.exists("wallet.json"):
+        print("\n⚠️ Zaten bir cüzdanınız var!")
+        choice = input("Yeni cüzdan oluşturmak istiyor musunuz? (Eski cüzdan SİLİNECEK!) (E/H): ")
+        if choice.lower() != 'e':
+            return
+
+    # Mevcut cüzdanı sil (varsa)
+    if os.path.exists("wallet.json"):
+        os.remove("wallet.json")
+    
+    # Yeni cüzdan oluştur
+    print("\n🔐 Sunucuda yeni cüzdan oluşturuluyor...")
     client_socket.send("CREATE_WALLET".encode('utf-8'))
     wallet_response = client_socket.recv(4096).decode('utf-8')
     

@@ -77,12 +77,12 @@ def load_wallet(filename="wallet.json"):
         return Wallet()
 
 # Yeni cüzdan oluştur ve kaydet
-wallet = Wallet()
-wallet.save_wallet()
+# wallet = Wallet()
+# wallet.save_wallet()
 
 # Kaydedilen cüzdanı tekrar yükle
-loaded_wallet = load_wallet()  # load_wallet fonksiyonu tanımlandıktan sonra çağrılıyor
+# loaded_wallet = load_wallet()  # load_wallet fonksiyonu tanımlandıktan sonra çağrılıyor
 
 # ✅ Hatalı satır kaldırıldı
-print("🏦 Adres:", loaded_wallet.address)
-print("🔐 Private Key:", loaded_wallet.private_key)
+# print("🏦 Adres:", loaded_wallet.address)
+# print("🔐 Private Key:", loaded_wallet.private_key)
