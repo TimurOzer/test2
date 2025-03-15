@@ -13,7 +13,7 @@ function openTransactionModal(txData) {
   document.getElementById('tx-from').textContent = txData.sender;
   document.getElementById('tx-to').textContent = txData.recipient;
   document.getElementById('tx-amount').textContent = txData.amount;
-  document.getElementById('tx-fee').textContent = txData.fee;
+  document.getElementById('tx-fee').textContent = txData.fee || 'N/A'; // Fee bilgisi yoksa "N/A" göster
   document.getElementById('tx-timestamp').textContent = new Date(txData.timestamp * 1000).toLocaleString();
   document.getElementById('tx-status').textContent = txData.status || 'Confirmed';
 
@@ -155,57 +155,55 @@ async function visualizeBlockchain() {
 
     function formatContent(data) {
         return Object.entries(data).map(([key, value]) => {
-            const specialFields = {
-                hash: ['hash', 'merkleroot', 'signature', 'token_address', 'security_data', 'block_hash', 'prev_hash_1', 'prev_hash_2', 'recipient', 'sender'],
-                timestamp: ['timestamp', 'time', 'date'],
-                code: ['address', 'id', 'nonce', 'max_supply', 'recipient', 'amount', 'tag', 'airdrop', 'mining_reserve']
-            };
-			if (key === 'transactions' && Array.isArray(value)) {
+			const specialFields = {
+			  hash: ['hash', 'merkleroot', 'signature', 'token_address', 'security_data', 'block_hash', 'prev_hash_1', 'prev_hash_2', 'recipient', 'sender'],
+			  timestamp: ['timestamp', 'time', 'date'],
+			  code: ['address', 'id', 'nonce', 'max_supply', 'recipient', 'amount', 'tag', 'airdrop', 'mining_reserve']
+			};
+			if (key === 'transfer' && typeof value === 'object') {
 			  return `
 				<div class="tx-list">
-				  <strong>Transactions:</strong>
-				  ${value.map(tx => `
-					<div class="tx-item" data-tx='${JSON.stringify(tx)}'>
-					  <span class="tx-hash">${tx.hash.slice(0, 6)}...${tx.hash.slice(-4)}</span>
-					  <span class="tx-amount">${tx.amount} BKV</span>
-					</div>
-				  `).join('')}
+				  <strong>Transfer:</strong>
+				  <div class="tx-item" data-tx='${JSON.stringify(value)}'>
+					<span class="tx-hash">${value.sender.slice(0, 6)}...${value.sender.slice(-4)} → ${value.recipient.slice(0, 6)}...${value.recipient.slice(-4)}</span>
+					<span class="tx-amount">${value.amount} BKV</span>
+				  </div>
 				</div>
 			  `;
 			}
-            if (specialFields.hash.some(f => key.toLowerCase().includes(f))) {
-                return `
-                    <div class="copy-field" data-copy="${value}">
-                        <strong>${key}:</strong>
-                        <span class="short-value">${value.slice(0, 6)}...${value.slice(-4)}</span>
-                        <span class="copy-hint">Click to copy</span>
-                    </div>
-                `;
-            }
+			if (specialFields.hash.some(f => key.toLowerCase().includes(f))) {
+			  return `
+				<div class="copy-field" data-copy="${value}">
+				  <strong>${key}:</strong>
+				  <span class="short-value">${value.slice(0, 6)}...${value.slice(-4)}</span>
+				  <span class="copy-hint">Click to copy</span>
+				</div>
+			  `;
+			}
 
-            if (specialFields.timestamp.includes(key.toLowerCase())) {
-                const date = new Date(value * 1000).toLocaleString();
-                return `
-                    <div class="copy-field" data-copy="${value}">
-                        <strong>${key}:</strong>
-                        <span>${date}</span>
-                        <span class="copy-hint">Click to copy Unix time</span>
-                    </div>
-                `;
-            }
+			if (specialFields.timestamp.includes(key.toLowerCase())) {
+			  const date = new Date(value * 1000).toLocaleString();
+			  return `
+				<div class="copy-field" data-copy="${value}">
+				  <strong>${key}:</strong>
+				  <span>${date}</span>
+				  <span class="copy-hint">Click to copy Unix time</span>
+				</div>
+			  `;
+			}
 
-            if (specialFields.code.some(f => key.toLowerCase().includes(f))) {
-                return `
-                    <div class="copy-field">
-                        <strong>${key}:</strong>
-                        <span>${value}</span>
-                    </div>
-                `;
-            }
+			if (specialFields.code.some(f => key.toLowerCase().includes(f))) {
+			  return `
+				<div class="copy-field">
+				  <strong>${key}:</strong>
+				  <span>${value}</span>
+				</div>
+			  `;
+			}
 
-            return `<div class="data-field"><strong>${key}:</strong> ${value}</div>`;
-        }).join('');
-    }
+		return `<div class="data-field"><strong>${key}:</strong> ${value}</div>`;
+	  }).join('');
+	}
 
     function registerHashes(data, element) {
         const hashFields = [
