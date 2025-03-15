@@ -5,6 +5,7 @@ import socket
 import shutil
 import hashlib
 import time
+import math
 from genesis_block import GenesisBlock, TOKEN_ADDRESS, MAX_SUPPLY  # Genesis Block sınıfı ve sabitler
 from wallet import Wallet, load_wallet  # load_wallet fonksiyonunu da import edin
 from baklava_foundation import calculate_transfer_fee, transfer_fee_to_foundation, BaklavaFoundationWallet
@@ -86,14 +87,20 @@ def calculate_difficulty():
 
     # Günlük beta blok sayısını kontrol et
     current_time = time.time()
-    if current_time - LAST_BLOCK_TIMESTAMP > 86400:  # 1 gün (86400 saniye) geçtiyse
-        print("🕛 Daily reset: Beta blocks counter reset to 0")
+    if current_time - LAST_BLOCK_TIMESTAMP > 86400:  # 1 gün geçtiyse
         DAILY_BETA_BLOCKS = 0  # Günlük beta blok sayısını sıfırla
         LAST_BLOCK_TIMESTAMP = current_time  # Zamanı güncelle
         save_server_state()  # Durumu kaydet
 
+    # Beta blokların etkisini yumuşak bir şekilde artır
+    beta_impact = math.sqrt(DAILY_BETA_BLOCKS)  # Karekök ile yumuşak artış
+    # beta_impact = math.log2(DAILY_BETA_BLOCKS + 1)  # Logaritma ile yumuşak artış
+
     # Zorluğu hesapla
-    difficulty = GLOBAL_MINING_DIFFICULTY + int(DAILY_BETA_BLOCKS ** 0.5)
+    difficulty = GLOBAL_MINING_DIFFICULTY + int(beta_impact)
+    print(f"🌍 Global Difficulty: {GLOBAL_MINING_DIFFICULTY}")
+    print(f"📊 Beta Blocks Impact: {beta_impact:.2f}")
+    print(f"🔨 Calculated Difficulty: {difficulty}")
     return max(4, difficulty)  # Minimum zorluk 4
     
 def is_valid_nonce(nonce, difficulty):
@@ -106,20 +113,40 @@ def is_valid_nonce(nonce, difficulty):
         return False  # Nonce geçersizse False döndür
     
 def calculate_mining_reward(client_socket):
-    global GLOBAL_MINING_DIFFICULTY
+    global GLOBAL_MINING_DIFFICULTY, DAILY_BETA_BLOCKS
+
     with open(GENESIS_BLOCK_FILE, "r") as f:
         genesis_data = json.load(f)
     
     mining_reserve = genesis_data["mining_reserve"]
     
     # Ödül formülü: (Base Reward) / (1 + Difficulty^1.5)
-    base_reward = 100  # Temel ödül
+    base_reward = 50  # Temel ödül
     reward = base_reward / (1 + (GLOBAL_MINING_DIFFICULTY ** 1.5))
     
+    # Beta blokların etkisini hesapla (karekök veya logaritma)
+    beta_impact = math.sqrt(DAILY_BETA_BLOCKS)  # Karekök ile yumuşak artış
+    # beta_impact = math.log2(DAILY_BETA_BLOCKS + 1)  # Logaritma ile yumuşak artış
+    
+    # Zorluğu hesapla
+    difficulty = GLOBAL_MINING_DIFFICULTY + int(beta_impact)
+    
+    # Zorluk değerlerini virgülle ayırarak logla
+    global_difficulty = f"{GLOBAL_MINING_DIFFICULTY:,}"
+    calculated_difficulty = f"{difficulty:,}"
+    reward_formatted = f"{reward:,.2f}"
+    beta_impact_formatted = f"{beta_impact:,.2f}"
+    
+    print(f"🔨 Current Difficulty: {calculated_difficulty} (0'lar)")
+    print(f"🌍 Global Difficulty: {global_difficulty}")
+    print(f"📊 Beta Blocks Impact: {beta_impact_formatted}")
+    print(f"💰 Block Reward: {reward_formatted} BAKL")
+    
     return {
-        "difficulty": GLOBAL_MINING_DIFFICULTY + int(DAILY_BETA_BLOCKS ** 0.5),
-        "reward": round(reward, 2),
-        "global_difficulty": GLOBAL_MINING_DIFFICULTY
+        "difficulty": difficulty,
+        "reward": reward,
+        "global_difficulty": GLOBAL_MINING_DIFFICULTY,
+        "beta_impact": beta_impact  # Beta impact'i ekle
     }
 
 def update_mining_difficulty():

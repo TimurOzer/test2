@@ -1,0 +1,10 @@
+{
+    "previous_hash": "9d835f79d231a18f719cc64250ffbef2db3d25c4f2f5f0cfbf7df86e3a211bdf",
+    "sender": "MINING_SYSTEM",
+    "recipient": "1GsD7f12To5bJ9v5EjShE1Cdg2YBjXgN4E",
+    "amount": 5.555555555555555,
+    "tag": "mining",
+    "timestamp": 1742044778.7589192,
+    "nonce": 0,
+    "block_hash": "6c050b51e239f27d1e5de08e6b7ba37c9fd680bcef933f546659c8c96062099e"
+}

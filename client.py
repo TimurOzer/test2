@@ -407,24 +407,26 @@ def mine_menu(client_socket):
     with open("wallet.json", "r") as f:
         wallet = json.load(f)
     
-    print(f"🔨 Current Difficulty: {mining_info['difficulty']} (0'lar)")
-    print(f"🌍 Global Difficulty: {mining_info['global_difficulty']}")
-    print(f"💰 Block Reward: {mining_info['reward']:.2f} BAKL")
+    # Zorluk değerlerini virgülle ayırarak göster
+    current_difficulty = f"{mining_info['difficulty']:,}"
+    global_difficulty = f"{mining_info['global_difficulty']:,}"
+    block_reward = f"{mining_info['reward']:,.2f}"
+    beta_impact = f"{mining_info.get('beta_impact', 0):,.2f}"  # Beta impact'i ekle
+    
+    print(f"🔨 Current Difficulty: {current_difficulty} (0'lar)")
+    print(f"🌍 Global Difficulty: {global_difficulty}")
+    print(f"📊 Beta Blocks Impact: {beta_impact}")
+    print(f"💰 Block Reward: {block_reward} BAKL")
     
     if input("Start mining? (y/n): ").lower() != 'y':
         return
     
     print("⛏️ Mining started... (Press CTRL+C to stop)")
     start_time = time.time()
-    nonce_base = random.randint(1, 10**(mining_info['difficulty'] + 2))  # Nonce aralığını genişlet
+    nonce = random.randint(1, 10**(mining_info['difficulty'] + 2))  # Nonce aralığını genişlet
     
     try:
         while True:
-            # Benzersiz nonce oluştur: nonce_base + zaman damgası + adresin hash'i
-            timestamp = int(time.time() * 1000)  # Milisaniye cinsinden zaman damgası
-            address_hash = int(hashlib.sha256(wallet['address'].encode()).hexdigest(), 16) % 10**6  # Adresin hash'i
-            nonce = nonce_base + timestamp + address_hash
-            
             # Hash hesapla
             hash_attempt = hashlib.sha256(f"{nonce}{mining_info['difficulty']}".encode()).hexdigest()
             
@@ -435,7 +437,7 @@ def mine_menu(client_socket):
                 
                 if result == "NONCE_ALREADY_USED":
                     print("❌ Nonce already used. Restarting mining...")
-                    nonce_base = random.randint(1, 10**(mining_info['difficulty'] + 2))  # Yeni nonce üret
+                    nonce = random.randint(1, 10**(mining_info['difficulty'] + 2))  # Yeni nonce üret
                     continue
                 elif result == "MINING_SUCCESS":
                     print("🏆 Mining successful!")
@@ -444,12 +446,12 @@ def mine_menu(client_socket):
                     print(f"❌ Server response: {result}")
                     return
                 
-            nonce_base += 1
+            nonce += 1
             
             # Her 10000 denemede bir ilerleme göster
-            if nonce_base % 10000 == 0:
+            if nonce % 10000 == 0:
                 elapsed = time.time() - start_time
-                print(f"⏳ Hashes: {nonce_base} | Speed: {nonce_base/elapsed:.2f} H/s | Elapsed: {elapsed:.1f}s")
+                print(f"⏳ Hashes: {nonce:,} | Speed: {nonce/elapsed:,.2f} H/s | Elapsed: {elapsed:.1f}s")
                 
     except KeyboardInterrupt:
         print("⏹ Mining stopped")
