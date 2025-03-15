@@ -34,11 +34,11 @@ window.addEventListener('click', (event) => {
   }
 });
 
-// Blok içeriğindeki işlemlere tıklama
+// View butonuna tıklama olayı
 document.addEventListener('click', (event) => {
-  const txElement = event.target.closest('.tx-item');
-  if (txElement) {
-    const txData = JSON.parse(txElement.dataset.tx);
+  const viewButton = event.target.closest('.view-button');
+  if (viewButton) {
+    const txData = JSON.parse(viewButton.dataset.tx);
     openTransactionModal(txData);
   }
 });
@@ -155,13 +155,25 @@ async function visualizeBlockchain() {
 	function formatContent(data) {
 	  return Object.entries(data).map(([key, value]) => {
 		// Transfer bilgilerini özel bir alanda göster
-		if (key === 'transfer' && typeof value === 'object') {
+		if (key === 'sender' || key === 'recipient' || key === 'amount') {
+		  return ''; // Bu alanları ayrıca göstermeye gerek yok, çünkü transfer bilgisi olarak göstereceğiz.
+		}
+
+		// Transfer bilgilerini özel bir alanda göster
+		if (key === 'tag' && value === 'transfer') {
 		  return `
 			<div class="transfer-container">
 			  <strong>Transfer:</strong>
 			  <div class="transfer-hover-area">
-				<span class="transfer-summary">${value.sender.slice(0, 6)}...${value.sender.slice(-4)} → ${value.recipient.slice(0, 6)}...${value.recipient.slice(-4)}</span>
-				<button class="view-button" data-tx='${JSON.stringify(value)}'>View</button>
+				<span class="transfer-summary">${data.sender.slice(0, 6)}...${data.sender.slice(-4)} → ${data.recipient.slice(0, 6)}...${data.recipient.slice(-4)}</span>
+				<button class="view-button" data-tx='${JSON.stringify({
+				  sender: data.sender,
+				  recipient: data.recipient,
+				  amount: data.amount,
+				  fee: 0, // Fee bilgisi yoksa varsayılan değer
+				  timestamp: data.timestamp,
+				  status: 'Confirmed' // Varsayılan durum
+				})}'>View</button>
 			  </div>
 			</div>
 		  `;
