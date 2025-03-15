@@ -419,3 +419,122 @@ code {
     0% { background-color: rgba(255,255,0,0.3); }
     100% { background-color: transparent; }
 }
+
+/* Network Stats Panel */
+.network-stats {
+  display: flex;
+  justify-content: space-around;
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #ffd700, #daa520);
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.stat-box {
+  text-align: center;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  width: 30%;
+  transition: transform 0.3s ease;
+}
+
+.stat-box:hover {
+  transform: translateY(-5px);
+}
+
+.stat-box img {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 0.5rem;
+}
+
+.stat-box span {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #8b4513;
+  display: block;
+}
+
+.stat-box p {
+  margin: 0;
+  color: #654321;
+  font-size: 0.9rem;
+}
+/* Modal Stilleri */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  background-color: #fff9f0;
+  margin: 10% auto;
+  padding: 2rem;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.close-modal {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #8b4513;
+}
+
+.close-modal:hover {
+  color: #654321;
+}
+
+.tx-content p {
+  margin: 1rem 0;
+  font-size: 1.1rem;
+  color: #654321;
+}
+
+.tx-content strong {
+  color: #8b4513;
+}
+
+/* İşlem Listesi Stilleri */
+.tx-list {
+  margin-top: 1rem;
+}
+
+.tx-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem;
+  margin: 0.5rem 0;
+  background: #fff3e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.tx-item:hover {
+  background: #ffe0b2;
+}
+
+.tx-hash {
+  font-family: monospace;
+  color: #8b4513;
+}
+
+.tx-amount {
+  font-weight: bold;
+  color: #654321;
+}

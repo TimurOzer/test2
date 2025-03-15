@@ -19,6 +19,24 @@
                 </div>
             </div>
         </header>
+<!-- Header'ın hemen altına ekleyin -->
+<div class="network-stats">
+  <div class="stat-box">
+    <img src="icons/block-icon.png" alt="Blocks">
+    <span id="total-blocks">0</span>
+    <p>Total Blocks</p>
+  </div>
+  <div class="stat-box">
+    <img src="icons/transaction-icon.png" alt="Transactions">
+    <span id="total-txs">0</span>
+    <p>Transactions</p>
+  </div>
+  <div class="stat-box">
+    <img src="icons/node-icon.png" alt="Nodes">
+    <span id="active-nodes">0</span>
+    <p>Active Nodes</p>
+  </div>
+</div>
 
         <main id="main-content">
             <div id="blockchain-container"></div>
@@ -28,5 +46,20 @@
 
     <script src="script.js"></script>
 <div id="copy-notification" class="copy-notification" style="display: none;">✓ Copied!</div>
+<!-- İşlem Detay Modalı -->
+<div id="transaction-modal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal">&times;</span>
+    <h3>🍯 Transaction Details</h3>
+    <div class="tx-content">
+      <p><strong>From:</strong> <span id="tx-from"></span></p>
+      <p><strong>To:</strong> <span id="tx-to"></span></p>
+      <p><strong>Amount:</strong> <span id="tx-amount"></span> BKV</p>
+      <p><strong>Fee:</strong> <span id="tx-fee"></span> FILO</p>
+      <p><strong>Timestamp:</strong> <span id="tx-timestamp"></span></p>
+      <p><strong>Status:</strong> <span id="tx-status"></span></p>
+    </div>
+  </div>
+</div>
 </body>
 </html>

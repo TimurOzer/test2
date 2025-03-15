@@ -121,7 +121,19 @@ async function visualizeBlockchain() {
                 timestamp: ['timestamp', 'time', 'date'],
                 code: ['address', 'id', 'nonce', 'max_supply', 'recipient', 'amount', 'tag', 'airdrop', 'mining_reserve']
             };
-
+			if (key === 'transactions' && Array.isArray(value)) {
+			  return `
+				<div class="tx-list">
+				  <strong>Transactions:</strong>
+				  ${value.map(tx => `
+					<div class="tx-item" data-tx='${JSON.stringify(tx)}'>
+					  <span class="tx-hash">${tx.hash.slice(0, 6)}...${tx.hash.slice(-4)}</span>
+					  <span class="tx-amount">${tx.amount} BKV</span>
+					</div>
+				  `).join('')}
+				</div>
+			  `;
+			}
             if (specialFields.hash.some(f => key.toLowerCase().includes(f))) {
                 return `
                     <div class="copy-field" data-copy="${value}">
@@ -195,4 +207,48 @@ async function visualizeBlockchain() {
 
     // İlk yükleme
     visualizeBlockchain();
+});
+
+// Network Stats Güncelleme Fonksiyonu
+async function updateNetworkStats() {
+  try {
+    // Blok sayısını güncelle
+    const blockCount = await fetchBlockCount();
+    document.getElementById('total-blocks').textContent = blockCount;
+
+    // İşlem sayısını güncelle
+    const txCount = await fetchTransactionCount();
+    document.getElementById('total-txs').textContent = txCount;
+
+    // Aktif node sayısını güncelle
+    const nodeCount = await fetchActiveNodes();
+    document.getElementById('active-nodes').textContent = nodeCount;
+  } catch (error) {
+    console.error('Ağ istatistikleri güncellenirken hata:', error);
+  }
+}
+
+// Örnek API çağrıları (Bu fonksiyonları kendi backend'inize göre uyarlayın)
+async function fetchBlockCount() {
+  const response = await fetch('/api/blocks/count');
+  const data = await response.json();
+  return data.count;
+}
+
+async function fetchTransactionCount() {
+  const response = await fetch('/api/transactions/count');
+  const data = await response.json();
+  return data.count;
+}
+
+async function fetchActiveNodes() {
+  const response = await fetch('/api/nodes/active');
+  const data = await response.json();
+  return data.count;
+}
+
+// Sayfa yüklendiğinde ve belirli aralıklarla istatistikleri güncelle
+document.addEventListener('DOMContentLoaded', () => {
+  updateNetworkStats();
+  setInterval(updateNetworkStats, 30000); // Her 30 saniyede bir güncelle
 });
