@@ -641,3 +641,52 @@ code {
   color: #654321;
   font-size: 0.9rem;
 }
+/* API Dokümantasyonu Stilleri */
+.api-docs {
+  margin: 2rem 0;
+  padding: 2rem;
+  background: linear-gradient(135deg, #ffd700, #daa520);
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.api-docs h2 {
+  text-align: center;
+  color: #8b4513;
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
+}
+
+.api-docs .endpoint {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  transition: transform 0.3s ease;
+}
+
+.api-docs .endpoint:hover {
+  transform: translateY(-5px);
+}
+
+.api-docs .endpoint h3 {
+  color: #8b4513;
+  margin-bottom: 0.5rem;
+}
+
+.api-docs .endpoint p {
+  color: #654321;
+  margin-bottom: 1rem;
+}
+
+.api-docs .endpoint pre {
+  background: #f8f8f8;
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.api-docs .endpoint code {
+  font-family: 'Courier New', Courier, monospace;
+  color: #4a90e2;
+}
