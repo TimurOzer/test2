@@ -304,3 +304,44 @@ document.addEventListener('DOMContentLoaded', () => {
   updateNetworkStats();
   setInterval(updateNetworkStats, 30000); // Her 30 saniyede bir güncelle
 });
+
+// Harita oluşturma
+const map = L.map('network-map').setView([39.9334, 32.8597], 6); // Türkiye merkezli harita
+
+// Harita katmanı ekleme
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+// Node'ları haritada gösterme
+const nodes = [
+  { name: 'Node 1', location: [41.0082, 28.9784] }, // İstanbul
+  { name: 'Node 2', location: [39.9208, 32.8541] }, // Ankara
+  { name: 'Node 3', location: [38.4237, 27.1428] }, // İzmir
+  { name: 'Node 4', location: [36.8841, 30.7056] }, // Antalya
+  { name: 'Node 5', location: [37.0000, 35.3213] }, // Adana
+];
+// Node bağlantılarını çizme
+const connections = [
+  [nodes[0].location, nodes[1].location], // İstanbul -> Ankara
+  [nodes[1].location, nodes[2].location], // Ankara -> İzmir
+  [nodes[2].location, nodes[3].location], // İzmir -> Antalya
+  [nodes[3].location, nodes[4].location], // Antalya -> Adana
+];
+
+connections.forEach(connection => {
+  L.polyline(connection, { color: '#daa520', weight: 3, dashArray: '5, 10' }).addTo(map);
+});
+
+// Özel node ikonu
+const nodeIcon = L.icon({
+  iconUrl: 'icons/node-icon.png', // Kendi ikonunuzu ekleyin
+  iconSize: [30, 30], // İkon boyutu
+  iconAnchor: [15, 15], // İkonun merkezi
+});
+
+nodes.forEach(node => {
+  L.marker(node.location, { icon: nodeIcon })
+    .addTo(map)
+    .bindPopup(`<b>${node.name}</b><br>${node.location.join(', ')}`);
+});

@@ -6,6 +6,8 @@
     <title>Baklava Blockchain Explorer</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" type="image/png" href="baklava-icon.png">
+		<!-- Leaflet CSS -->
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
     <div class="container">
@@ -39,11 +41,14 @@
 </div>
 
         <main id="main-content">
+			<div id="network-map" style="height: 500px; border-radius: 15px; margin: 2rem 0;"></div>		
             <div id="blockchain-container"></div>
             <div id="block-details" class="block-detail"></div>
         </main>
     </div>
 
+	<!-- Leaflet JavaScript -->
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="script.js"></script>
 <div id="copy-notification" class="copy-notification" style="display: none;">✓ Copied!</div>
 <!-- İşlem Detay Modalı -->
