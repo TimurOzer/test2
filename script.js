@@ -3,7 +3,46 @@ document.addEventListener("DOMContentLoaded", async function () {
     const searchButton = document.getElementById("search-button");
     const blockInput = document.getElementById("block-input");
     const hashRegistry = new Map();
+	
+	// Modal İşlevselliği
+	const modal = document.getElementById('transaction-modal');
+	const closeModalBtn = document.querySelector('.close-modal');
 
+// Modal'ı açma fonksiyonu
+function openTransactionModal(txData) {
+  document.getElementById('tx-from').textContent = txData.sender;
+  document.getElementById('tx-to').textContent = txData.recipient;
+  document.getElementById('tx-amount').textContent = txData.amount;
+  document.getElementById('tx-fee').textContent = txData.fee;
+  document.getElementById('tx-timestamp').textContent = new Date(txData.timestamp * 1000).toLocaleString();
+  document.getElementById('tx-status').textContent = txData.status || 'Confirmed';
+
+  modal.style.display = 'block';
+}
+
+// Modal'ı kapatma fonksiyonu
+function closeTransactionModal() {
+  modal.style.display = 'none';
+}
+
+// Modal'ı kapatma butonu
+closeModalBtn.addEventListener('click', closeTransactionModal);
+
+// Dışarı tıklayarak kapatma
+window.addEventListener('click', (event) => {
+  if (event.target === modal) {
+    closeTransactionModal();
+  }
+});
+
+// Blok içeriğindeki işlemlere tıklama
+document.addEventListener('click', (event) => {
+  const txElement = event.target.closest('.tx-item');
+  if (txElement) {
+    const txData = JSON.parse(txElement.dataset.tx);
+    openTransactionModal(txData);
+  }
+});
     // Kopyalama olayı
     container.addEventListener('click', (event) => {
         const target = event.target.closest('[data-copy]');

@@ -7,6 +7,6 @@
     "nonce": 86479,
     "block_hash": "00001f7329df3e3eeaaba753c118ce96cb8972039adb22bda103906eeaa3e4f1",
     "security_hash": "e4c148375e3f7c2843cdaff7f95419c991ca4466d8ea88f75b2f61e22b55934b",
-    "airdrop_reserve": 50000000,
+    "airdrop_reserve": 49999999,
     "mining_reserve": 49999977.77777779
 }
