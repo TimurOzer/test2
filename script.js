@@ -345,3 +345,57 @@ nodes.forEach(node => {
     .addTo(map)
     .bindPopup(`<b>${node.name}</b><br>${node.location.join(', ')}`);
 });
+
+// Token ekonomisi verilerini güncelleme
+async function updateTokenEconomics() {
+  try {
+    // Toplam arzı güncelle
+    const totalSupply = await fetchTotalSupply();
+    document.getElementById('total-supply').textContent = totalSupply;
+
+    // Dolaşımdaki arzı güncelle
+    const circulatingSupply = await fetchCirculatingSupply();
+    document.getElementById('circulating-supply').textContent = circulatingSupply;
+
+    // Stake edilen tokenleri güncelle
+    const stakedTokens = await fetchStakedTokens();
+    document.getElementById('staked-tokens').textContent = stakedTokens;
+
+    // Token fiyatını güncelle
+    const tokenPrice = await fetchTokenPrice();
+    document.getElementById('token-price').textContent = `$${tokenPrice}`;
+  } catch (error) {
+    console.error('Token ekonomisi verileri güncellenirken hata:', error);
+  }
+}
+
+// Örnek API çağrıları (Bu fonksiyonları kendi backend'inize göre uyarlayın)
+async function fetchTotalSupply() {
+  const response = await fetch('/api/token/total-supply');
+  const data = await response.json();
+  return data.totalSupply;
+}
+
+async function fetchCirculatingSupply() {
+  const response = await fetch('/api/token/circulating-supply');
+  const data = await response.json();
+  return data.circulatingSupply;
+}
+
+async function fetchStakedTokens() {
+  const response = await fetch('/api/token/staked-tokens');
+  const data = await response.json();
+  return data.stakedTokens;
+}
+
+async function fetchTokenPrice() {
+  const response = await fetch('/api/token/price');
+  const data = await response.json();
+  return data.price;
+}
+
+// Sayfa yüklendiğinde ve belirli aralıklarla token ekonomisi verilerini güncelle
+document.addEventListener('DOMContentLoaded', () => {
+  updateTokenEconomics();
+  setInterval(updateTokenEconomics, 30000); // Her 30 saniyede bir güncelle
+});
