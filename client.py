@@ -416,10 +416,15 @@ def mine_menu(client_socket):
     
     print("⛏️ Mining started... (Press CTRL+C to stop)")
     start_time = time.time()
-    nonce = random.randint(1, 10**mining_info['difficulty'])  # Rastgele başlangıç
+    nonce_base = random.randint(1, 10**(mining_info['difficulty'] + 2))  # Nonce aralığını genişlet
     
     try:
         while True:
+            # Benzersiz nonce oluştur: nonce_base + zaman damgası + adresin hash'i
+            timestamp = int(time.time() * 1000)  # Milisaniye cinsinden zaman damgası
+            address_hash = int(hashlib.sha256(wallet['address'].encode()).hexdigest(), 16) % 10**6  # Adresin hash'i
+            nonce = nonce_base + timestamp + address_hash
+            
             # Hash hesapla
             hash_attempt = hashlib.sha256(f"{nonce}{mining_info['difficulty']}".encode()).hexdigest()
             
@@ -427,15 +432,24 @@ def mine_menu(client_socket):
                 print(f"✅ Valid nonce found: {nonce} | Hash: {hash_attempt}")
                 client_socket.send(f"SUBMIT_MINING|{wallet['address']}|{nonce}".encode())
                 result = client_socket.recv(1024).decode()
-                print("🏆 Mining successful!" if result == "MINING_SUCCESS" else "❌ Failed")
-                return
                 
-            nonce += 1
+                if result == "NONCE_ALREADY_USED":
+                    print("❌ Nonce already used. Restarting mining...")
+                    nonce_base = random.randint(1, 10**(mining_info['difficulty'] + 2))  # Yeni nonce üret
+                    continue
+                elif result == "MINING_SUCCESS":
+                    print("🏆 Mining successful!")
+                    return
+                else:
+                    print(f"❌ Server response: {result}")
+                    return
+                
+            nonce_base += 1
             
             # Her 10000 denemede bir ilerleme göster
-            if nonce % 10000 == 0:
+            if nonce_base % 10000 == 0:
                 elapsed = time.time() - start_time
-                print(f"⏳ Hashes: {nonce} | Speed: {nonce/elapsed:.2f} H/s | Elapsed: {elapsed:.1f}s")
+                print(f"⏳ Hashes: {nonce_base} | Speed: {nonce_base/elapsed:.2f} H/s | Elapsed: {elapsed:.1f}s")
                 
     except KeyboardInterrupt:
         print("⏹ Mining stopped")

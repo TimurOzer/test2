@@ -1,10 +1,10 @@
 {
-    "previous_hash": "afdf549d3c83c429156e7fbb2b42ec3d8fcf193eb4f83e77e7664f22c0e2b6a7",
+    "previous_hash": "af20871e4b931c5910ff9ffdee17478f93dc7d5d1f477fb54b7036c296142258",
     "sender": "MINING_SYSTEM",
-    "recipient": "14GvwaXpAEouJ4XM9eNZYxDWW6P4eroWeT",
+    "recipient": "127KwsTzqKgDtwxkkokF2fbRgVePKPdWuz",
     "amount": 11.11,
     "tag": "mining",
-    "timestamp": 1742040253.7774477,
+    "timestamp": 1742043522.411963,
     "nonce": 0,
-    "block_hash": "c03b77c048a30ddb6fb0d976fab4f5e2200bcb470852b4395b4afc356f4aee83"
+    "block_hash": "bdff42ff48c5a5bb45a035fb81ba4db1598e724103e571795c98da7bd0e89ab2"
 }

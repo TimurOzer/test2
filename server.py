@@ -1,8 +1,8 @@
-import socket
-import threading
 import os
-import shutil
 import json
+import threading
+import socket
+import shutil
 import hashlib
 import time
 from genesis_block import GenesisBlock, TOKEN_ADDRESS, MAX_SUPPLY  # Genesis Block sınıfı ve sabitler
@@ -10,15 +10,22 @@ from wallet import Wallet, load_wallet  # load_wallet fonksiyonunu da import edi
 from baklava_foundation import calculate_transfer_fee, transfer_fee_to_foundation, BaklavaFoundationWallet
 from wallet_block import WalletBlock
 from wallet import BAKLAVA_TOKEN_ID
-
-# Yeni blok sınıflarını import ediyoruz
 from alpha_block import AlphaBlock
 from security_block import SecurityBlock
 from beta_block import BetaBlock
 
+# Veri klasörü ve dosya yolları
 DATA_DIR = "data"  # Veri klasörü
-GENESIS_BLOCK_FILE = os.path.join(DATA_DIR, "genesis_block.json")  # Dosya yolu
-WALLETS_DIR = os.path.join(DATA_DIR, "wallets")  # Yeni eklendi
+WALLETS_DIR = os.path.join(DATA_DIR, "wallets")  # Cüzdanlar klasörü
+GENESIS_BLOCK_FILE = os.path.join(DATA_DIR, "genesis_block.json")  # Genesis blok dosyası
+USED_NONCES_FILE = os.path.join(DATA_DIR, "used_nonces.json")  # Kullanılan nonce'lar dosyası
+
+# Blok zinciri güncelleme kilidi
+blockchain_lock = threading.Lock()
+
+# Global değişken: Kullanılan nonce değerlerini saklamak için
+used_nonces = set()
+
 BAKLAVA_TOKEN_ID = "bklvdc38569a110702c2fed1164021f0539df178"
 beta_blocks_today = len([f for f in os.listdir(DATA_DIR) if f.startswith("beta")])
 # Global zorluk değişkeni
@@ -29,6 +36,18 @@ LAST_BLOCK_TIMESTAMP = time.time()  # Son blok zamanı
 # Yeni sabitler
 STATE_FILE = os.path.join(DATA_DIR, "server_state.json")
 
+def load_used_nonces():
+    """Kullanılan nonce değerlerini dosyadan yükler."""
+    if os.path.exists(USED_NONCES_FILE):
+        with open(USED_NONCES_FILE, "r") as f:
+            return set(json.load(f))
+    return set()
+
+def save_used_nonces(used_nonces):
+    """Kullanılan nonce değerlerini dosyaya kaydeder."""
+    with open(USED_NONCES_FILE, "w") as f:
+        json.dump(list(used_nonces), f)
+        
 def save_server_state():
     """Sunucu durumunu dosyaya kaydeder."""
     state = {
@@ -61,12 +80,6 @@ def ensure_data_dir():
         os.makedirs(DATA_DIR)
     if not os.path.exists(WALLETS_DIR):  # Yeni eklendi
         os.makedirs(WALLETS_DIR)
-
-def ensure_data_dir():
-    """Eğer data klasörü yoksa, oluşturur."""
-    if not os.path.exists(DATA_DIR):
-        os.makedirs(DATA_DIR)
-        print(f"📁 '{DATA_DIR}' klasörü oluşturuldu.")
     
 def calculate_difficulty():
     global GLOBAL_MINING_DIFFICULTY, DAILY_BETA_BLOCKS, LAST_BLOCK_TIMESTAMP
@@ -221,6 +234,9 @@ def send_prev_hashes(client_socket):
     client_socket.send(json.dumps(response).encode('utf-8'))
 
 def handle_client(client_socket, client_address):
+    global used_nonces
+    # Kullanılan nonce değerlerini yükle
+    used_nonces = load_used_nonces()
     print(f"🔗 {client_address} bağlandı.")
     try:
         # Güncelleme isteği kontrolü
@@ -254,49 +270,61 @@ def handle_client(client_socket, client_address):
                 print(f"⛏️ Mining submission received: {message}")
                 try:
                     _, address, nonce = message.split("|")
+                    nonce = int(nonce)  # Nonce'u integer'a çevir
                     mining_info = calculate_mining_reward(client_socket)
                     
                     # Nonce kontrolü
+                    if nonce in used_nonces:
+                        client_socket.send("NONCE_ALREADY_USED".encode())
+                        print(f"❌ Nonce already used: {nonce}")
+                        continue
+
                     if is_valid_nonce(nonce, mining_info["difficulty"]):
-                        update_mining_reserve(mining_info["reward"])
-                        update_mining_difficulty()  # Zorluğu güncelle
-                        
-                        # Ödülü cüzdana ekle
-                        wallet_path = os.path.join(WALLETS_DIR, f"{address}.json")
-                        if os.path.exists(wallet_path):
-                            with open(wallet_path, "r+") as f:
-                                wallet_data = json.load(f)
-                                wallet_data["baklava_balance"][BAKLAVA_TOKEN_ID] += mining_info["reward"]
-                                f.seek(0)
-                                json.dump(wallet_data, f, indent=4)
-                                f.truncate()
-                            print(f"💰 Mining reward added to {address}")
-                        else:
-                            print(f"❌ Wallet not found: {address}")
-                            client_socket.send("WALLET_NOT_FOUND".encode())
-                            continue
-                        
-                        # Blokları oluştur
-                        prev_hashes = get_previous_hashes()
-                        alpha_block = AlphaBlock(
-                            previous_hash=prev_hashes[0],
-                            sender="MINING_SYSTEM",
-                            recipient=address,
-                            amount=mining_info["reward"],
-                            tag="mining"
-                        )
-                        security_block = SecurityBlock(prev_hashes[1])
-                        beta_block = BetaBlock(
-                            prev_alpha_hash=alpha_block.block_hash,
-                            prev_security_hash=security_block.security_hash
-                        )
-                        
-                        save_block(alpha_block, "alpha")
-                        save_block(security_block, "security")
-                        save_block(beta_block, "beta")
-                        
-                        client_socket.send("MINING_SUCCESS".encode())
-                        print(f"✅ Mining successful for {address}")
+                        # Blok zincirini güncelleme kilidini al
+                        with blockchain_lock:
+                            # Nonce'u kullanılanlar listesine ekle
+                            used_nonces.add(nonce)
+                            save_used_nonces(used_nonces)  # Dosyaya kaydet
+                            
+                            update_mining_reserve(mining_info["reward"])
+                            update_mining_difficulty()  # Zorluğu güncelle
+                            
+                            # Ödülü cüzdana ekle
+                            wallet_path = os.path.join(WALLETS_DIR, f"{address}.json")
+                            if os.path.exists(wallet_path):
+                                with open(wallet_path, "r+") as f:
+                                    wallet_data = json.load(f)
+                                    wallet_data["baklava_balance"][BAKLAVA_TOKEN_ID] += mining_info["reward"]
+                                    f.seek(0)
+                                    json.dump(wallet_data, f, indent=4)
+                                    f.truncate()
+                                print(f"💰 Mining reward added to {address}")
+                            else:
+                                print(f"❌ Wallet not found: {address}")
+                                client_socket.send("WALLET_NOT_FOUND".encode())
+                                continue
+                            
+                            # Blokları oluştur
+                            prev_hashes = get_previous_hashes()
+                            alpha_block = AlphaBlock(
+                                previous_hash=prev_hashes[0],
+                                sender="MINING_SYSTEM",
+                                recipient=address,
+                                amount=mining_info["reward"],
+                                tag="mining"
+                            )
+                            security_block = SecurityBlock(prev_hashes[1])
+                            beta_block = BetaBlock(
+                                prev_alpha_hash=alpha_block.block_hash,
+                                prev_security_hash=security_block.security_hash
+                            )
+                            
+                            save_block(alpha_block, "alpha")
+                            save_block(security_block, "security")
+                            save_block(beta_block, "beta")
+                            
+                            client_socket.send("MINING_SUCCESS".encode())
+                            print(f"✅ Mining successful for {address}")
                     else:
                         client_socket.send("INVALID_NONCE".encode())
                         print(f"❌ Invalid nonce: {nonce}")
@@ -642,6 +670,9 @@ def start_server():
     # Sunucu durumunu yükle
     load_server_state()
     print(f"🌍 Loaded server state: Global Difficulty={GLOBAL_MINING_DIFFICULTY}, Daily Blocks={DAILY_BETA_BLOCKS}")
+    # Kullanılan nonce değerlerini yükle
+    global used_nonces
+    used_nonces = load_used_nonces()
     
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind((host, port))

@@ -1,7 +1,7 @@
 {
-    "prev_alpha_hash": "13622db982660850f6e6ebaa277ce0c49dff8863598f0b9c39b2c442d78c0185",
-    "prev_security_hash": "8677e91a9044147d97064d9bd8e240e8c7063a234628927eae1f65a58d676e3a",
-    "timestamp": 1742040261.74522,
-    "block_hash": "7117def9ce74f1bcfd5f30f4bd828a1d2614b4c28d2d89b29c7b95ffd6e8c260",
-    "security_hash": "067c8a0fb0bded804a497f8de7f4c4869b76b5ce69a9b3f7bb5dd1998e2f135d"
+    "prev_alpha_hash": "7a4ad2eaf3e95ae147ac0e5ea912659d4757eb2bbf887a13fa4dbb89d9b1c67d",
+    "prev_security_hash": "1b664b6f6e1bd35048751ecaed208bb5bc8ae4c6394d3fe3ec6f8416522e2cd8",
+    "timestamp": 1742043533.4276733,
+    "block_hash": "e6be7e34db5d49f4e57f693f757d1363e557db1531d675ba622b56610de1ad0c",
+    "security_hash": "10d9bbbc890e56b0859769db2e7a15cc3defd86be4c0c2407531770e87927b6e"
 }
