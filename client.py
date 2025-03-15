@@ -3,6 +3,7 @@ import sys
 import os
 import hashlib
 import shutil
+import random
 import time
 import json
 from wallet import BAKLAVA_TOKEN_ID  # Bu satırı ekleyin
@@ -399,64 +400,51 @@ def airdrop_menu(client_socket):
 
 def mine_menu(client_socket):
     print("\n--- MINING MENU ---")
-    
-    # Sunucudan mining bilgilerini al
     client_socket.send("GET_MINING_INFO".encode())
-    print("📥 Waiting for mining info from server...")
+    mining_info = json.loads(client_socket.recv(4096).decode())
+    
+    # Cüzdanı yükle
+    with open("wallet.json", "r") as f:
+        wallet = json.load(f)
+    
+    print(f"🔨 Current Difficulty: {mining_info['difficulty']} (0'lar)")
+    print(f"🌍 Global Difficulty: {mining_info['global_difficulty']}")
+    print(f"💰 Block Reward: {mining_info['reward']:.2f} BAKL")
+    
+    if input("Start mining? (y/n): ").lower() != 'y':
+        return
+    
+    print("⛏️ Mining started... (Press CTRL+C to stop)")
+    start_time = time.time()
+    nonce = random.randint(1, 10**mining_info['difficulty'])  # Rastgele başlangıç
     
     try:
-        # Zaman aşımı ekleyin (örneğin 10 saniye)
-        client_socket.settimeout(20)  # Zaman aşımını 20 saniyeye çıkar
-        response = client_socket.recv(4096).decode()
-        print(f"📨 Received response: {response}")
-        
-        if not response:
-            print("❌ No response received from server")
-            return
-        
-        mining_info = json.loads(response)
-        print(f"🔨 Current Difficulty: {mining_info['difficulty']} (0'lar)")
-        print(f"💰 Block Reward: {mining_info['reward']:.2f} BAKL")
-        print(f"🏦 Mining Reserve: {mining_info['mining_reserve']} BAKL")
-        
-        if input("Start mining? (y/n): ").lower() != 'y':
-            return
-        
-        print("⛏️ Mining started... (Press CTRL+C to stop)")
-        nonce = 0
-        start_time = time.time()
-        
-        try:
-            while True:
-                # Her 10 saniyede bir durum güncellemesi
-                if time.time() - start_time > 10:
-                    print(f"⏳ Mining... Nonce: {nonce}")
-                    start_time = time.time()
+        while True:
+            # Hash hesapla
+            hash_attempt = hashlib.sha256(f"{nonce}{mining_info['difficulty']}".encode()).hexdigest()
+            
+            if hash_attempt.startswith('0' * mining_info['difficulty']):
+                print(f"✅ Valid nonce found: {nonce} | Hash: {hash_attempt}")
+                client_socket.send(f"SUBMIT_MINING|{wallet['address']}|{nonce}".encode())
+                result = client_socket.recv(1024).decode()
+                print("🏆 Mining successful!" if result == "MINING_SUCCESS" else "❌ Failed")
+                return
                 
-                # Basit PoW algoritması
-                if nonce % (10**mining_info['difficulty']) == 0:
-                    print(f"✅ Valid nonce found: {nonce}")
-                    with open("wallet.json") as f:
-                        wallet = json.load(f)
-                    client_socket.send(f"SUBMIT_MINING|{wallet['address']}|{nonce}".encode())
-                    
-                    # Yanıt için ek zaman aşımı
-                    client_socket.settimeout(20)
-                    result = client_socket.recv(1024).decode()
-                    print("🏆 Mining successful!" if result == "MINING_SUCCESS" else f"❌ Server response: {result}")
-                    return
+            nonce += 1
+            
+            # Her 10000 denemede bir ilerleme göster
+            if nonce % 10000 == 0:
+                elapsed = time.time() - start_time
+                print(f"⏳ Hashes: {nonce} | Speed: {nonce/elapsed:.2f} H/s | Elapsed: {elapsed:.1f}s")
                 
-                nonce += 1
-        
-        except KeyboardInterrupt:
-            print("⏹ Mining stopped")
-    
+    except KeyboardInterrupt:
+        print("⏹ Mining stopped")
+    except Exception as e:
+        print(f"❌ Error: {e}")
     except socket.timeout:
         print("❌ Server did not respond in time.")
     except json.JSONDecodeError:
         print("❌ Invalid response from server")
-    except Exception as e:
-        print(f"❌ Error: {e}")
 
 # Check for updates
 if __name__ == "__main__":

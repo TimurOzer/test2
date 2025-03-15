@@ -3,6 +3,8 @@ import threading
 import os
 import shutil
 import json
+import hashlib
+import time
 from genesis_block import GenesisBlock, TOKEN_ADDRESS, MAX_SUPPLY  # Genesis Block sınıfı ve sabitler
 from wallet import Wallet, load_wallet  # load_wallet fonksiyonunu da import edin
 from baklava_foundation import calculate_transfer_fee, transfer_fee_to_foundation, BaklavaFoundationWallet
@@ -19,7 +21,40 @@ GENESIS_BLOCK_FILE = os.path.join(DATA_DIR, "genesis_block.json")  # Dosya yolu
 WALLETS_DIR = os.path.join(DATA_DIR, "wallets")  # Yeni eklendi
 BAKLAVA_TOKEN_ID = "bklvdc38569a110702c2fed1164021f0539df178"
 beta_blocks_today = len([f for f in os.listdir(DATA_DIR) if f.startswith("beta")])
+# Global zorluk değişkeni
+GLOBAL_MINING_DIFFICULTY = 4  # Başlangıç zorluğu
+DAILY_BETA_BLOCKS = 0  # Bugün üretilen beta blok sayısı
+LAST_BLOCK_TIMESTAMP = time.time()  # Son blok zamanı
 
+# Yeni sabitler
+STATE_FILE = os.path.join(DATA_DIR, "server_state.json")
+
+def save_server_state():
+    """Sunucu durumunu dosyaya kaydeder."""
+    state = {
+        "global_mining_difficulty": GLOBAL_MINING_DIFFICULTY,
+        "daily_beta_blocks": DAILY_BETA_BLOCKS,
+        "last_block_timestamp": LAST_BLOCK_TIMESTAMP
+    }
+    with open(STATE_FILE, "w") as f:
+        json.dump(state, f, indent=4)
+
+def load_server_state():
+    """Sunucu durumunu dosyadan yükler."""
+    global GLOBAL_MINING_DIFFICULTY, DAILY_BETA_BLOCKS, LAST_BLOCK_TIMESTAMP
+    if os.path.exists(STATE_FILE):
+        with open(STATE_FILE, "r") as f:
+            state = json.load(f)
+        GLOBAL_MINING_DIFFICULTY = state.get("global_mining_difficulty", 4)
+        DAILY_BETA_BLOCKS = state.get("daily_beta_blocks", 0)
+        LAST_BLOCK_TIMESTAMP = state.get("last_block_timestamp", time.time())
+    else:
+        # İlk başlatmada varsayılan değerler
+        GLOBAL_MINING_DIFFICULTY = 4
+        DAILY_BETA_BLOCKS = 0
+        LAST_BLOCK_TIMESTAMP = time.time()
+        save_server_state()  # İlk durumu kaydet
+        
 def ensure_data_dir():
     """Klasörleri oluştur"""
     if not os.path.exists(DATA_DIR):
@@ -32,25 +67,54 @@ def ensure_data_dir():
     if not os.path.exists(DATA_DIR):
         os.makedirs(DATA_DIR)
         print(f"📁 '{DATA_DIR}' klasörü oluşturuldu.")
+    
+def calculate_difficulty():
+    global GLOBAL_MINING_DIFFICULTY, DAILY_BETA_BLOCKS, LAST_BLOCK_TIMESTAMP
 
+    # Günlük beta blok sayısını kontrol et
+    current_time = time.time()
+    if current_time - LAST_BLOCK_TIMESTAMP > 86400:  # 1 gün geçtiyse
+        DAILY_BETA_BLOCKS = 0  # Günlük beta blok sayısını sıfırla
+        LAST_BLOCK_TIMESTAMP = current_time  # Zamanı güncelle
+        save_server_state()  # Durumu kaydet
+
+    # Zorluğu hesapla
+    difficulty = GLOBAL_MINING_DIFFICULTY + int(DAILY_BETA_BLOCKS ** 0.5)
+    return max(4, difficulty)  # Minimum zorluk 4
+    
+def is_valid_nonce(nonce, difficulty):
+    """Nonce değerinin geçerli olup olmadığını kontrol eder."""
+    try:
+        nonce = int(nonce)  # Nonce'u integer'a çevir
+        hash_result = hashlib.sha256(f"{nonce}{difficulty}".encode()).hexdigest()
+        return hash_result.startswith('0' * difficulty)
+    except (ValueError, TypeError):
+        return False  # Nonce geçersizse False döndür
+    
 def calculate_mining_reward(client_socket):
+    global GLOBAL_MINING_DIFFICULTY
     with open(GENESIS_BLOCK_FILE, "r") as f:
         genesis_data = json.load(f)
     
     mining_reserve = genesis_data["mining_reserve"]
-    beta_count = len([f for f in os.listdir(DATA_DIR) if f.startswith("beta")])
     
-    # Ödül: mining reserve'in %1'i (azalan ödül mekanizması)
-    reward = max(mining_reserve * 0.01, 1)  # Minimum 1 token
-    # Zorluk: Beta blok sayısına göre artan
-    difficulty = 4 + (beta_count // 100)  # Her 100 beta blokunda zorluk +1
+    # Ödül formülü: (Base Reward) / (1 + Difficulty^1.5)
+    base_reward = 100  # Temel ödül
+    reward = base_reward / (1 + (GLOBAL_MINING_DIFFICULTY ** 1.5))
     
     return {
-        "difficulty": difficulty,
-        "reward": reward,
-        "mining_reserve": mining_reserve
+        "difficulty": GLOBAL_MINING_DIFFICULTY + int(DAILY_BETA_BLOCKS ** 0.5),
+        "reward": round(reward, 2),
+        "global_difficulty": GLOBAL_MINING_DIFFICULTY
     }
 
+def update_mining_difficulty():
+    global GLOBAL_MINING_DIFFICULTY, DAILY_BETA_BLOCKS
+    DAILY_BETA_BLOCKS += 1
+    GLOBAL_MINING_DIFFICULTY += 1  # Her başarılı madencilikte zorluğu +1 artır
+    save_server_state()  # Durumu kaydet
+    print(f"🔼 Global mining difficulty increased to: {GLOBAL_MINING_DIFFICULTY}")
+    
 def update_mining_reserve(reward):
     with open(GENESIS_BLOCK_FILE, "r+") as f:
         genesis_data = json.load(f)
@@ -185,9 +249,10 @@ def handle_client(client_socket, client_address):
                     _, address, nonce = message.split("|")
                     mining_info = calculate_mining_reward(client_socket)
                     
-                    # Proof-of-Work kontrolü
-                    if int(nonce) % (10**mining_info["difficulty"]) == 0:
+                    # Nonce kontrolü
+                    if is_valid_nonce(nonce, mining_info["difficulty"]):
                         update_mining_reserve(mining_info["reward"])
+                        update_mining_difficulty()  # Zorluğu güncelle
                         
                         # Ödülü cüzdana ekle
                         wallet_path = os.path.join(WALLETS_DIR, f"{address}.json")
@@ -566,7 +631,11 @@ def save_block(block, prefix):
 def start_server():
     host = '192.168.1.106'  # Sunucunun IP adresi
     port = 5555             # Sunucunun portu
-
+    
+    # Sunucu durumunu yükle
+    load_server_state()
+    print(f"🌍 Loaded server state: Global Difficulty={GLOBAL_MINING_DIFFICULTY}, Daily Blocks={DAILY_BETA_BLOCKS}")
+    
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind((host, port))
     server_socket.listen(5)
