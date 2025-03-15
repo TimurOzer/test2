@@ -538,3 +538,51 @@ code {
   font-weight: bold;
   color: #654321;
 }
+/* Transfer Container Stilleri */
+.transfer-container {
+  margin: 1rem 0;
+}
+
+.transfer-hover-area {
+  position: relative;
+  display: inline-block;
+  padding: 0.5rem;
+  background: #fff3e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.transfer-hover-area:hover {
+  background: #ffe0b2;
+}
+
+.transfer-summary {
+  font-family: monospace;
+  color: #8b4513;
+}
+
+.view-button {
+  display: none;
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  background-color: #8b4513;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.transfer-hover-area:hover .view-button {
+  display: block;
+}
+
+.view-button:hover {
+  background-color: #654321;
+  transform: translateY(-50%) scale(1.05);
+}

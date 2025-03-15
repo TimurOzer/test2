@@ -8,7 +8,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 	const modal = document.getElementById('transaction-modal');
 	const closeModalBtn = document.querySelector('.close-modal');
 
-// Modal'ı açma fonksiyonu
 function openTransactionModal(txData) {
   document.getElementById('tx-from').textContent = txData.sender;
   document.getElementById('tx-to').textContent = txData.recipient;
@@ -153,53 +152,57 @@ async function visualizeBlockchain() {
         return block;
     }
 
-    function formatContent(data) {
-        return Object.entries(data).map(([key, value]) => {
-			const specialFields = {
-			  hash: ['hash', 'merkleroot', 'signature', 'token_address', 'security_data', 'block_hash', 'prev_hash_1', 'prev_hash_2', 'recipient', 'sender'],
-			  timestamp: ['timestamp', 'time', 'date'],
-			  code: ['address', 'id', 'nonce', 'max_supply', 'recipient', 'amount', 'tag', 'airdrop', 'mining_reserve']
-			};
-			if (key === 'transfer' && typeof value === 'object') {
-			  return `
-				<div class="tx-list">
-				  <strong>Transfer:</strong>
-				  <div class="tx-item" data-tx='${JSON.stringify(value)}'>
-					<span class="tx-hash">${value.sender.slice(0, 6)}...${value.sender.slice(-4)} → ${value.recipient.slice(0, 6)}...${value.recipient.slice(-4)}</span>
-					<span class="tx-amount">${value.amount} BKV</span>
-				  </div>
-				</div>
-			  `;
-			}
-			if (specialFields.hash.some(f => key.toLowerCase().includes(f))) {
-			  return `
-				<div class="copy-field" data-copy="${value}">
-				  <strong>${key}:</strong>
-				  <span class="short-value">${value.slice(0, 6)}...${value.slice(-4)}</span>
-				  <span class="copy-hint">Click to copy</span>
-				</div>
-			  `;
-			}
+	function formatContent(data) {
+	  return Object.entries(data).map(([key, value]) => {
+		// Transfer bilgilerini özel bir alanda göster
+		if (key === 'transfer' && typeof value === 'object') {
+		  return `
+			<div class="transfer-container">
+			  <strong>Transfer:</strong>
+			  <div class="transfer-hover-area">
+				<span class="transfer-summary">${value.sender.slice(0, 6)}...${value.sender.slice(-4)} → ${value.recipient.slice(0, 6)}...${value.recipient.slice(-4)}</span>
+				<button class="view-button" data-tx='${JSON.stringify(value)}'>View</button>
+			  </div>
+			</div>
+		  `;
+		}
 
-			if (specialFields.timestamp.includes(key.toLowerCase())) {
-			  const date = new Date(value * 1000).toLocaleString();
-			  return `
-				<div class="copy-field" data-copy="${value}">
-				  <strong>${key}:</strong>
-				  <span>${date}</span>
-				  <span class="copy-hint">Click to copy Unix time</span>
-				</div>
-			  `;
-			}
+		// Diğer alanlar
+		const specialFields = {
+		  hash: ['hash', 'merkleroot', 'signature', 'token_address', 'security_data', 'block_hash', 'prev_hash_1', 'prev_hash_2', 'recipient', 'sender'],
+		  timestamp: ['timestamp', 'time', 'date'],
+		  code: ['address', 'id', 'nonce', 'max_supply', 'recipient', 'amount', 'tag', 'airdrop', 'mining_reserve']
+		};
 
-			if (specialFields.code.some(f => key.toLowerCase().includes(f))) {
-			  return `
-				<div class="copy-field">
-				  <strong>${key}:</strong>
-				  <span>${value}</span>
-				</div>
-			  `;
-			}
+		if (specialFields.hash.some(f => key.toLowerCase().includes(f))) {
+		  return `
+			<div class="copy-field" data-copy="${value}">
+			  <strong>${key}:</strong>
+			  <span class="short-value">${value.slice(0, 6)}...${value.slice(-4)}</span>
+			  <span class="copy-hint">Click to copy</span>
+			</div>
+		  `;
+		}
+
+		if (specialFields.timestamp.includes(key.toLowerCase())) {
+		  const date = new Date(value * 1000).toLocaleString();
+		  return `
+			<div class="copy-field" data-copy="${value}">
+			  <strong>${key}:</strong>
+			  <span>${date}</span>
+			  <span class="copy-hint">Click to copy Unix time</span>
+			</div>
+		  `;
+		}
+
+		if (specialFields.code.some(f => key.toLowerCase().includes(f))) {
+		  return `
+			<div class="copy-field">
+			  <strong>${key}:</strong>
+			  <span>${value}</span>
+			</div>
+		  `;
+		}
 
 		return `<div class="data-field"><strong>${key}:</strong> ${value}</div>`;
 	  }).join('');
