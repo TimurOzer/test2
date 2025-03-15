@@ -73,7 +73,8 @@ def calculate_difficulty():
 
     # Günlük beta blok sayısını kontrol et
     current_time = time.time()
-    if current_time - LAST_BLOCK_TIMESTAMP > 86400:  # 1 gün geçtiyse
+    if current_time - LAST_BLOCK_TIMESTAMP > 86400:  # 1 gün (86400 saniye) geçtiyse
+        print("🕛 Daily reset: Beta blocks counter reset to 0")
         DAILY_BETA_BLOCKS = 0  # Günlük beta blok sayısını sıfırla
         LAST_BLOCK_TIMESTAMP = current_time  # Zamanı güncelle
         save_server_state()  # Durumu kaydet
@@ -110,10 +111,16 @@ def calculate_mining_reward(client_socket):
 
 def update_mining_difficulty():
     global GLOBAL_MINING_DIFFICULTY, DAILY_BETA_BLOCKS
-    DAILY_BETA_BLOCKS += 1
-    GLOBAL_MINING_DIFFICULTY += 1  # Her başarılı madencilikte zorluğu +1 artır
+    DAILY_BETA_BLOCKS += 1  # Günlük beta blok sayısını artır
+
+    # İki katına çıkarak zorluk artışı
+    next_threshold = 10 * (2 ** (GLOBAL_MINING_DIFFICULTY - 4))  # 10, 20, 40, 80, 160, ...
+    if DAILY_BETA_BLOCKS >= next_threshold:
+        GLOBAL_MINING_DIFFICULTY += 1
+        print(f"🔼 Global difficulty +1 (Reached {next_threshold} blocks today)")
+
     save_server_state()  # Durumu kaydet
-    print(f"🔼 Global mining difficulty increased to: {GLOBAL_MINING_DIFFICULTY}")
+    print(f"🌍 Current Global Difficulty: {GLOBAL_MINING_DIFFICULTY}")
     
 def update_mining_reserve(reward):
     with open(GENESIS_BLOCK_FILE, "r+") as f:
