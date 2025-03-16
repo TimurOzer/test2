@@ -184,6 +184,29 @@
 			  </div>
 			  <div class="comments-list" id="comments-list"></div>
 			</div>
+			<div class="airdrop-simulator">
+			  <h2>🎁 Token Airdrop Simulator</h2>
+			  <div class="airdrop-controls">
+				<div class="airdrop-input">
+				  <label for="airdrop-token">Token:</label>
+				  <select id="airdrop-token">
+					<option value="BKV">BKV</option>
+					<option value="FILO">FILO</option>
+					<option value="ANTEP">ANTEP</option>
+				  </select>
+				</div>
+				<div class="airdrop-input">
+				  <label for="airdrop-amount">Amount per User:</label>
+				  <input type="number" id="airdrop-amount" placeholder="Amount" min="0">
+				</div>
+				<div class="airdrop-input">
+				  <label for="airdrop-users">Number of Users:</label>
+				  <input type="number" id="airdrop-users" placeholder="Number of Users" min="1">
+				</div>
+				<button id="simulate-airdrop">Simulate Airdrop</button>
+			  </div>
+			  <div class="airdrop-result" id="airdrop-result"></div>
+			</div>
 			<div id="network-map" style="height: 500px; border-radius: 15px; margin: 2rem 0;"></div>		
             <div id="blockchain-container"></div>
             <div id="block-details" class="block-detail"></div>

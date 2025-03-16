@@ -1209,3 +1209,92 @@ body.dark-mode {
 .dark-mode .comment .author {
   color: #daa520;
 }
+
+/* Airdrop Simülatörü Stilleri */
+.airdrop-simulator {
+  margin: 2rem 0;
+  padding: 2rem;
+  background: linear-gradient(135deg, #ffd700, #daa520);
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.airdrop-simulator h2 {
+  text-align: center;
+  color: #8b4513;
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
+}
+
+.airdrop-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+}
+
+.airdrop-input {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.airdrop-input label {
+  font-weight: bold;
+  color: #8b4513;
+}
+
+.airdrop-input select, .airdrop-input input {
+  padding: 0.5rem;
+  border: 2px solid #8b4513;
+  border-radius: 25px;
+  background: #fff;
+  font-size: 1rem;
+}
+
+#simulate-airdrop {
+  padding: 0.5rem 1rem;
+  background-color: #8b4513;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+#simulate-airdrop:hover {
+  background-color: #654321;
+  transform: translateY(-2px);
+}
+
+.airdrop-result {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 1.2rem;
+  color: #8b4513;
+}
+
+/* Karanlık Tema için Airdrop Stilleri */
+.dark-mode .airdrop-simulator {
+  background: linear-gradient(135deg, #333, #555);
+}
+
+.dark-mode .airdrop-input select, .dark-mode .airdrop-input input {
+  background-color: #444;
+  color: #f5e6d3;
+  border-color: #555;
+}
+
+.dark-mode #simulate-airdrop {
+  background-color: #555;
+  color: #f5e6d3;
+}
+
+.dark-mode #simulate-airdrop:hover {
+  background-color: #666;
+}
+
+.dark-mode .airdrop-result {
+  color: #f5e6d3;
+}

@@ -740,3 +740,30 @@ document.addEventListener('DOMContentLoaded', async () => {
   const comments = await loadComments(blockHash);
   comments.forEach(comment => addComment(comment.commentText));
 });
+
+// Airdrop simülatörü işlevselliği
+const airdropTokenSelect = document.getElementById('airdrop-token');
+const airdropAmountInput = document.getElementById('airdrop-amount');
+const airdropUsersInput = document.getElementById('airdrop-users');
+const simulateAirdropButton = document.getElementById('simulate-airdrop');
+const airdropResult = document.getElementById('airdrop-result');
+
+// Airdrop simülasyonu fonksiyonu
+function simulateAirdrop(token, amountPerUser, numberOfUsers) {
+  const totalAmount = amountPerUser * numberOfUsers;
+  airdropResult.textContent = `Airdropping ${totalAmount} ${token} to ${numberOfUsers} users. Each user receives ${amountPerUser} ${token}.`;
+}
+
+// Airdrop simülasyonu butonuna tıklama olayı
+simulateAirdropButton.addEventListener('click', () => {
+  const token = airdropTokenSelect.value;
+  const amountPerUser = parseFloat(airdropAmountInput.value);
+  const numberOfUsers = parseInt(airdropUsersInput.value);
+
+  if (!amountPerUser || amountPerUser <= 0 || !numberOfUsers || numberOfUsers <= 0) {
+    airdropResult.textContent = 'Please enter valid amounts and number of users.';
+    return;
+  }
+
+  simulateAirdrop(token, amountPerUser, numberOfUsers);
+});
