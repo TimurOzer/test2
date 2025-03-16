@@ -820,3 +820,75 @@ async function fetchAllBlocks() {
     return [];
   }
 }
+
+// Akıllı kontrat doğrulama işlevselliği
+const contractCodeTextarea = document.getElementById('contract-code');
+const verifyContractButton = document.getElementById('verify-contract');
+const verificationResult = document.getElementById('verification-result');
+
+// Akıllı kontrat doğrulama fonksiyonu
+function verifyContract(contractCode) {
+  // Basit bir güvenlik kontrolü örneği
+  const vulnerabilities = [];
+  if (contractCode.includes('tx.origin')) {
+    vulnerabilities.push('Use of tx.origin is not recommended.');
+  }
+  if (contractCode.includes('block.timestamp')) {
+    vulnerabilities.push('Use of block.timestamp can be manipulated.');
+  }
+  if (contractCode.includes('revert()')) {
+    vulnerabilities.push('Unchecked revert() calls can lead to vulnerabilities.');
+  }
+
+  if (vulnerabilities.length > 0) {
+    return `Potential vulnerabilities found:\n${vulnerabilities.join('\n')}`;
+  } else {
+    return 'No vulnerabilities found. Your contract looks safe!';
+  }
+}
+
+// Doğrulama butonuna tıklama olayı
+verifyContractButton.addEventListener('click', () => {
+  const contractCode = contractCodeTextarea.value.trim();
+  if (!contractCode) {
+    verificationResult.textContent = 'Please paste your contract code.';
+    return;
+  }
+
+  const result = verifyContract(contractCode);
+  verificationResult.textContent = result;
+});
+
+// Gas ücreti tahmini işlevselliği
+const transactionTypeSelect = document.getElementById('transaction-type');
+const gasLimitInput = document.getElementById('gas-limit');
+const estimateGasButton = document.getElementById('estimate-gas');
+const gasResult = document.getElementById('gas-result');
+
+// Gas ücreti tahmini fonksiyonu
+function estimateGasFee(transactionType, gasLimit) {
+  const gasPrices = {
+    transfer: 20,
+    contract_call: 50,
+    token_mint: 100,
+  };
+
+  const gasPrice = gasPrices[transactionType] || 0;
+  const gasFee = gasPrice * gasLimit;
+
+  return gasFee;
+}
+
+// Gas ücreti tahmini butonuna tıklama olayı
+estimateGasButton.addEventListener('click', () => {
+  const transactionType = transactionTypeSelect.value;
+  const gasLimit = parseFloat(gasLimitInput.value);
+
+  if (!gasLimit || gasLimit <= 0) {
+    gasResult.textContent = 'Please enter a valid gas limit.';
+    return;
+  }
+
+  const gasFee = estimateGasFee(transactionType, gasLimit);
+  gasResult.textContent = `Estimated Gas Fee: ${gasFee} Gwei`;
+});
