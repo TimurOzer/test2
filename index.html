@@ -22,6 +22,9 @@
             </div>
         </header>
 <!-- Header'ın hemen altına ekleyin -->
+<button id="theme-toggle" class="theme-toggle">
+  <img src="icons/light-mode-icon.png" alt="Light Mode" id="theme-icon">
+</button>
 <div class="network-stats">
   <div class="stat-box">
     <img src="icons/block-icon.png" alt="Blocks">
@@ -96,6 +99,41 @@
 			  .then(response => response.json())
 			  .then(data => console.log(data));</code></pre>
 			  </div>
+			</div>
+			<div class="education-module">
+			  <h2>📚 Learn About Blockchain</h2>
+			  <div class="lesson">
+				<h3>1. What is Blockchain?</h3>
+				<p>Blockchain is a decentralized digital ledger that records transactions across many computers in such a way that the registered transactions cannot be altered retroactively.</p>
+				<button class="quiz-button" data-quiz="1">Take Quiz</button>
+			  </div>
+			  <div class="lesson">
+				<h3>2. How Does Baklava Blockchain Work?</h3>
+				<p>Baklava Blockchain uses a unique consensus mechanism to ensure fast and secure transactions. Learn more about its architecture and benefits.</p>
+				<button class="quiz-button" data-quiz="2">Take Quiz</button>
+			  </div>
+			  <div class="lesson">
+				<h3>3. What is a Token?</h3>
+				<p>Tokens are digital assets that can represent ownership, access rights, or other values within the blockchain ecosystem.</p>
+				<button class="quiz-button" data-quiz="3">Take Quiz</button>
+			  </div>
+			</div>
+			<div class="lesson">
+			  <h3>4. Watch a Video on Blockchain</h3>
+			  <div class="video-container">
+				<iframe width="560" height="315" src="https://www.youtube.com/embed/SSo_EIwHSd4" frameborder="0" allowfullscreen></iframe>
+			  </div>
+			</div>
+			<div class="share-buttons">
+			  <button class="share-button twitter" data-url="https://baklava-blockchain.com/block/123" data-text="Check out this block on Baklava Blockchain!">
+				<img src="icons/twitter-icon.png" alt="Twitter"> Tweet
+			  </button>
+			  <button class="share-button facebook" data-url="https://baklava-blockchain.com/block/123">
+				<img src="icons/facebook-icon.png" alt="Facebook"> Share
+			  </button>
+			  <button class="share-button linkedin" data-url="https://baklava-blockchain.com/block/123">
+				<img src="icons/linkedin-icon.png" alt="LinkedIn"> Share
+			  </button>
 			</div>
 			<div id="network-map" style="height: 500px; border-radius: 15px; margin: 2rem 0;"></div>		
             <div id="blockchain-container"></div>

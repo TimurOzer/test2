@@ -399,3 +399,120 @@ document.addEventListener('DOMContentLoaded', () => {
   updateTokenEconomics();
   setInterval(updateTokenEconomics, 30000); // Her 30 saniyede bir güncelle
 });
+
+// Quiz butonlarına tıklama olayı
+document.addEventListener('click', (event) => {
+  const quizButton = event.target.closest('.quiz-button');
+  if (quizButton) {
+    const quizId = quizButton.dataset.quiz;
+    startQuiz(quizId);
+  }
+});
+
+// Quiz başlatma fonksiyonu
+function startQuiz(quizId) {
+  const questions = {
+    1: [
+      {
+        question: "What is a blockchain?",
+        options: ["A type of cryptocurrency", "A decentralized digital ledger", "A centralized database"],
+        answer: 1
+      },
+      {
+        question: "What is the main benefit of blockchain?",
+        options: ["Speed", "Transparency", "Centralization"],
+        answer: 1
+      }
+    ],
+    2: [
+      {
+        question: "What consensus mechanism does Baklava Blockchain use?",
+        options: ["Proof of Work", "Proof of Stake", "Proof of Baklava"],
+        answer: 2
+      }
+    ],
+    3: [
+      {
+        question: "What is a token?",
+        options: ["A digital asset", "A physical coin", "A type of blockchain"],
+        answer: 0
+      }
+    ]
+  };
+
+  const quizQuestions = questions[quizId];
+  if (quizQuestions) {
+    let score = 0;
+    quizQuestions.forEach((q, index) => {
+      const userAnswer = prompt(`${index + 1}. ${q.question}\n\nOptions:\n${q.options.join('\n')}`);
+      if (userAnswer == q.answer) {
+        score++;
+      }
+    });
+    alert(`You scored ${score} out of ${quizQuestions.length}!`);
+  } else {
+    alert('Quiz not found!');
+  }
+}
+
+// Paylaşım butonlarına tıklama olayı
+document.addEventListener('click', (event) => {
+  const shareButton = event.target.closest('.share-button');
+  if (shareButton) {
+    const url = shareButton.dataset.url;
+    const text = shareButton.dataset.text || 'Check out this on Baklava Blockchain!';
+
+    if (shareButton.classList.contains('twitter')) {
+      shareOnTwitter(url, text);
+    } else if (shareButton.classList.contains('facebook')) {
+      shareOnFacebook(url);
+    } else if (shareButton.classList.contains('linkedin')) {
+      shareOnLinkedIn(url);
+    }
+  }
+});
+
+// Twitter'da paylaşma fonksiyonu
+function shareOnTwitter(url, text) {
+  const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+  window.open(twitterUrl, '_blank');
+}
+
+// Facebook'ta paylaşma fonksiyonu
+function shareOnFacebook(url) {
+  const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+  window.open(facebookUrl, '_blank');
+}
+
+// LinkedIn'de paylaşma fonksiyonu
+function shareOnLinkedIn(url) {
+  const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+  window.open(linkedinUrl, '_blank');
+}
+
+function updateShareButtons(blockHash) {
+  const shareUrl = `https://baklava-blockchain.com/block/${blockHash}`;
+  const shareButtons = document.querySelectorAll('.share-button');
+  shareButtons.forEach(button => {
+    button.dataset.url = shareUrl;
+  });
+}
+
+// Tema değiştirme butonu
+const themeToggle = document.getElementById('theme-toggle');
+const themeIcon = document.getElementById('theme-icon');
+
+// Kullanıcının tercih ettiği temayı kontrol et
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme === 'dark') {
+  document.body.classList.add('dark-mode');
+  themeIcon.src = 'image/dark-mode-icon.png';
+}
+
+// Tema değiştirme işlevselliği
+themeToggle.addEventListener('click', () => {
+  document.body.classList.toggle('dark-mode');
+  const isDarkMode = document.body.classList.contains('dark-mode');
+  localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+  themeIcon.src = isDarkMode ? 'image/dark-mode-icon.png' : 'image/light-mode-icon.png';
+});
