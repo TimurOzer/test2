@@ -207,6 +207,22 @@
 			  </div>
 			  <div class="airdrop-result" id="airdrop-result"></div>
 			</div>
+			<div class="block-sorting">
+			  <h2>🔢 Block Sorting</h2>
+			  <div class="sort-controls">
+				<label for="sort-criteria">Sort by:</label>
+				<select id="sort-criteria">
+				  <option value="timestamp">Timestamp</option>
+				  <option value="block_hash">Block Hash</option>
+				  <option value="transaction_count">Transaction Count</option>
+				</select>
+				<select id="sort-order">
+				  <option value="asc">Ascending</option>
+				  <option value="desc">Descending</option>
+				</select>
+				<button id="sort-button">Sort Blocks</button>
+			  </div>
+			</div>
 			<div id="network-map" style="height: 500px; border-radius: 15px; margin: 2rem 0;"></div>		
             <div id="blockchain-container"></div>
             <div id="block-details" class="block-detail"></div>

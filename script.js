@@ -767,3 +767,56 @@ simulateAirdropButton.addEventListener('click', () => {
 
   simulateAirdrop(token, amountPerUser, numberOfUsers);
 });
+
+// Blok sıralama işlevselliği
+const sortCriteriaSelect = document.getElementById('sort-criteria');
+const sortOrderSelect = document.getElementById('sort-order');
+const sortButton = document.getElementById('sort-button');
+
+// Blokları sıralama fonksiyonu
+function sortBlocks(blocks, criteria, order) {
+  return blocks.sort((a, b) => {
+    let valueA, valueB;
+
+    if (criteria === 'timestamp') {
+      valueA = a.timestamp;
+      valueB = b.timestamp;
+    } else if (criteria === 'block_hash') {
+      valueA = a.block_hash;
+      valueB = b.block_hash;
+    } else if (criteria === 'transaction_count') {
+      valueA = a.transactions ? a.transactions.length : 0;
+      valueB = b.transactions ? b.transactions.length : 0;
+    }
+
+    if (order === 'asc') {
+      return valueA > valueB ? 1 : -1;
+    } else {
+      return valueA < valueB ? 1 : -1;
+    }
+  });
+}
+
+// Sıralama butonuna tıklama olayı
+sortButton.addEventListener('click', async () => {
+  const criteria = sortCriteriaSelect.value;
+  const order = sortOrderSelect.value;
+
+  const blocks = await fetchAllBlocks();
+  const sortedBlocks = sortBlocks(blocks, criteria, order);
+
+  // Sıralanmış blokları görselleştir
+  visualizeBlockchain(sortedBlocks);
+});
+
+// Tüm blokları çekme
+async function fetchAllBlocks() {
+  try {
+    const response = await fetch('/api/blocks');
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching all blocks:', error);
+    return [];
+  }
+}
