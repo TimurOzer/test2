@@ -657,3 +657,86 @@ fromTokenSelect.addEventListener('change', () => {
 document.addEventListener('DOMContentLoaded', () => {
   fromTokenSelect.dispatchEvent(new Event('change'));
 });
+
+// Yorum işlevselliği
+const commentInput = document.getElementById('comment-input');
+const submitCommentButton = document.getElementById('submit-comment');
+const commentsList = document.getElementById('comments-list');
+
+// Yorum gönderme fonksiyonu
+function addComment(commentText) {
+  const comment = document.createElement('div');
+  comment.className = 'comment';
+  comment.innerHTML = `
+    <p><span class="author">Anonymous</span>: ${commentText}</p>
+  `;
+  commentsList.appendChild(comment);
+}
+
+// Yorum gönderme butonuna tıklama olayı
+submitCommentButton.addEventListener('click', () => {
+  const commentText = commentInput.value.trim();
+  if (commentText) {
+    addComment(commentText);
+    commentInput.value = ''; // Yorum alanını temizle
+  } else {
+    alert('Please write a comment before submitting.');
+  }
+});
+
+// Yorum alanında Enter tuşuna basıldığında yorum gönderme
+commentInput.addEventListener('keypress', (event) => {
+  if (event.key === 'Enter') {
+    submitCommentButton.click();
+  }
+});
+
+// Yorumları backend'e kaydetme
+async function saveComment(blockHash, commentText) {
+  try {
+    const response = await fetch('/api/comments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ blockHash, commentText }),
+    });
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return await response.json();
+  } catch (error) {
+    console.error('Error saving comment:', error);
+    return null;
+  }
+}
+
+// Yorumları backend'den çekme
+async function loadComments(blockHash) {
+  try {
+    const response = await fetch(`/api/comments/${blockHash}`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return await response.json();
+  } catch (error) {
+    console.error('Error loading comments:', error);
+    return [];
+  }
+}
+
+// Yorum gönderme butonuna tıklama olayı (Backend entegrasyonu ile)
+submitCommentButton.addEventListener('click', async () => {
+  const commentText = commentInput.value.trim();
+  if (commentText) {
+    const blockHash = currentBlockHash; // Mevcut blok hash'i
+    const savedComment = await saveComment(blockHash, commentText);
+    if (savedComment) {
+      addComment(savedComment.commentText);
+      commentInput.value = ''; // Yorum alanını temizle
+    }
+  } else {
+    alert('Please write a comment before submitting.');
+  }
+});
+
+// Sayfa yüklendiğinde yorumları yükle
+document.addEventListener('DOMContentLoaded', async () => {
+  const blockHash = currentBlockHash; // Mevcut blok hash'i
+  const comments = await loadComments(blockHash);
+  comments.forEach(comment => addComment(comment.commentText));
+});
