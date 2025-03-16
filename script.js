@@ -892,3 +892,116 @@ estimateGasButton.addEventListener('click', () => {
   const gasFee = estimateGasFee(transactionType, gasLimit);
   gasResult.textContent = `Estimated Gas Fee: ${gasFee} Gwei`;
 });
+
+// Ağ sağlık skoru işlevselliği
+const healthScoreValue = document.getElementById('health-score-value');
+const performanceScore = document.getElementById('performance-score');
+const securityScore = document.getElementById('security-score');
+const stabilityScore = document.getElementById('stability-score');
+
+// Ağ sağlık skorunu güncelleme fonksiyonu
+async function updateNetworkHealthScore() {
+  try {
+    const performance = await fetchPerformanceScore();
+    const security = await fetchSecurityScore();
+    const stability = await fetchStabilityScore();
+
+    const overallScore = Math.round((performance + security + stability) / 3);
+
+    healthScoreValue.textContent = overallScore;
+    performanceScore.textContent = performance;
+    securityScore.textContent = security;
+    stabilityScore.textContent = stability;
+  } catch (error) {
+    console.error('Error updating network health score:', error);
+  }
+}
+
+// Performans skorunu çekme (örnek)
+async function fetchPerformanceScore() {
+  const response = await fetch('/api/performance');
+  const data = await response.json();
+  return data.score;
+}
+
+// Güvenlik skorunu çekme (örnek)
+async function fetchSecurityScore() {
+  const response = await fetch('/api/security');
+  const data = await response.json();
+  return data.score;
+}
+
+// Stabilite skorunu çekme (örnek)
+async function fetchStabilityScore() {
+  const response = await fetch('/api/stability');
+  const data = await response.json();
+  return data.score;
+}
+
+// Sayfa yüklendiğinde ve belirli aralıklarla skoru güncelle
+document.addEventListener('DOMContentLoaded', () => {
+  updateNetworkHealthScore();
+  setInterval(updateNetworkHealthScore, 30000); // Her 30 saniyede bir güncelle
+});
+// Blok ödül takipçisi işlevselliği
+const totalRewards = document.getElementById('total-rewards');
+const lastReward = document.getElementById('last-reward');
+const rewardsTableBody = document.querySelector('#rewards-table tbody');
+
+// Blok ödüllerini güncelleme fonksiyonu
+async function updateBlockRewards() {
+  try {
+    const rewards = await fetchBlockRewards();
+    let total = 0;
+    let last = 0;
+
+    rewardsTableBody.innerHTML = ''; // Tabloyu temizle
+
+    rewards.forEach(reward => {
+      total += reward.amount;
+      last = reward.amount;
+
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${reward.block_hash.slice(0, 6)}...${reward.block_hash.slice(-4)}</td>
+        <td>${reward.amount}</td>
+        <td>${new Date(reward.timestamp * 1000).toLocaleString()}</td>
+      `;
+      rewardsTableBody.appendChild(row);
+    });
+
+    totalRewards.textContent = total;
+    lastReward.textContent = last;
+  } catch (error) {
+    console.error('Error updating block rewards:', error);
+  }
+}
+
+// Blok ödüllerini çekme (örnek)
+async function fetchBlockRewards() {
+  const response = await fetch('/api/block-rewards');
+  const data = await response.json();
+  return data.rewards;
+}
+
+// Sayfa yüklendiğinde ve belirli aralıklarla ödülleri güncelle
+document.addEventListener('DOMContentLoaded', () => {
+  updateBlockRewards();
+  setInterval(updateBlockRewards, 30000); // Her 30 saniyede bir güncelle
+});
+
+// Etkileşimli rehber işlevselliği
+const steps = document.querySelectorAll('.step');
+
+steps.forEach(step => {
+  const button = document.createElement('button');
+  button.textContent = 'Mark as Completed';
+  button.className = 'complete-button';
+  step.appendChild(button);
+
+  button.addEventListener('click', () => {
+    step.style.opacity = '0.6';
+    button.textContent = 'Completed ✓';
+    button.disabled = true;
+  });
+});

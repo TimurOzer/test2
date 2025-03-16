@@ -250,6 +250,74 @@
 			  </div>
 			  <div class="gas-result" id="gas-result"></div>
 			</div>
+			<div class="network-health">
+			  <h2>🌡️ Network Health Score</h2>
+			  <div class="health-score">
+				<div class="score-circle">
+				  <span id="health-score-value">0</span>
+				  <span class="score-label">/100</span>
+				</div>
+				<div class="score-details">
+				  <p><strong>Performance:</strong> <span id="performance-score">0</span></p>
+				  <p><strong>Security:</strong> <span id="security-score">0</span></p>
+				  <p><strong>Stability:</strong> <span id="stability-score">0</span></p>
+				</div>
+			  </div>
+			</div>
+			<div class="block-rewards-tracker">
+			  <h2>💰 Block Rewards Tracker</h2>
+			  <div class="rewards-summary">
+				<p><strong>Total Rewards:</strong> <span id="total-rewards">0</span> BKV</p>
+				<p><strong>Last Reward:</strong> <span id="last-reward">0</span> BKV</p>
+			  </div>
+			  <div class="rewards-history">
+				<h3>Reward History</h3>
+				<table id="rewards-table">
+				  <thead>
+					<tr>
+					  <th>Block Hash</th>
+					  <th>Reward (BKV)</th>
+					  <th>Timestamp</th>
+					</tr>
+				  </thead>
+				  <tbody>
+					<!-- Ödül geçmişi buraya eklenecek -->
+				  </tbody>
+				</table>
+			  </div>
+			</div>
+			<div class="node-setup-guide">
+			  <h2>🛠️ Node Setup Guide</h2>
+			  <div class="guide-steps">
+				<div class="step">
+				  <h3>Step 1: Install Dependencies</h3>
+				  <p>Install the necessary dependencies for running a Baklava Blockchain node.</p>
+				  <pre><code>sudo apt-get update
+			sudo apt-get install -y build-essential git</code></pre>
+				</div>
+				<div class="step">
+				  <h3>Step 2: Clone the Repository</h3>
+				  <p>Clone the Baklava Blockchain repository from GitHub.</p>
+				  <pre><code>git clone https://github.com/baklava-blockchain/node.git
+			cd node</code></pre>
+				</div>
+				<div class="step">
+				  <h3>Step 3: Build the Node</h3>
+				  <p>Build the node using the provided build script.</p>
+				  <pre><code>./build.sh</code></pre>
+				</div>
+				<div class="step">
+				  <h3>Step 4: Configure the Node</h3>
+				  <p>Edit the configuration file to set up your node.</p>
+				  <pre><code>nano config.yaml</code></pre>
+				</div>
+				<div class="step">
+				  <h3>Step 5: Start the Node</h3>
+				  <p>Start the node and connect to the Baklava Blockchain network.</p>
+				  <pre><code>./start-node.sh</code></pre>
+				</div>
+			  </div>
+			</div>			
 			<div id="network-map" style="height: 500px; border-radius: 15px; margin: 2rem 0;"></div>		
             <div id="blockchain-container"></div>
             <div id="block-details" class="block-detail"></div>

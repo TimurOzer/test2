@@ -1539,3 +1539,285 @@ body.dark-mode {
 .dark-mode .gas-result {
   color: #f5e6d3;
 }
+
+/* Ağ Sağlık Skoru Arayüzü Stilleri */
+.network-health {
+  margin: 2rem 0;
+  padding: 2rem;
+  background: linear-gradient(135deg, #ffd700, #daa520);
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.network-health h2 {
+  text-align: center;
+  color: #8b4513;
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
+}
+
+.health-score {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+}
+
+.score-circle {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: #8b4513;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: 2rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.score-circle .score-label {
+  font-size: 1rem;
+  color: #f5e6d3;
+}
+
+.score-details {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 1.5rem;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.score-details p {
+  margin: 0.5rem 0;
+  color: #654321;
+}
+
+.score-details strong {
+  color: #8b4513;
+}
+
+/* Karanlık Tema için Ağ Sağlık Skoru Stilleri */
+.dark-mode .network-health {
+  background: linear-gradient(135deg, #333, #555);
+}
+
+.dark-mode .score-circle {
+  background: #555;
+}
+
+.dark-mode .score-details {
+  background: rgba(51, 51, 51, 0.9);
+  color: #f5e6d3;
+}
+
+.dark-mode .score-details p {
+  color: #f5e6d3;
+}
+
+.dark-mode .score-details strong {
+  color: #daa520;
+}
+/* Blok Ödül Takipçisi Arayüzü Stilleri */
+.block-rewards-tracker {
+  margin: 2rem 0;
+  padding: 2rem;
+  background: linear-gradient(135deg, #ffd700, #daa520);
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.block-rewards-tracker h2 {
+  text-align: center;
+  color: #8b4513;
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
+}
+
+.rewards-summary {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 1.5rem;
+  border-radius: 15px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.rewards-summary p {
+  margin: 0.5rem 0;
+  color: #654321;
+}
+
+.rewards-summary strong {
+  color: #8b4513;
+}
+
+.rewards-history {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 1.5rem;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.rewards-history h3 {
+  color: #8b4513;
+  margin-bottom: 1rem;
+}
+
+#rewards-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#rewards-table th, #rewards-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+#rewards-table th {
+  background-color: #8b4513;
+  color: white;
+}
+
+#rewards-table tr:hover {
+  background-color: #f5f5f5;
+}
+
+/* Karanlık Tema için Blok Ödül Takipçisi Stilleri */
+.dark-mode .block-rewards-tracker {
+  background: linear-gradient(135deg, #333, #555);
+}
+
+.dark-mode .rewards-summary, .dark-mode .rewards-history {
+  background: rgba(51, 51, 51, 0.9);
+  color: #f5e6d3;
+}
+
+.dark-mode .rewards-summary p, .dark-mode .rewards-history h3 {
+  color: #f5e6d3;
+}
+
+.dark-mode .rewards-summary strong {
+  color: #daa520;
+}
+
+.dark-mode #rewards-table th {
+  background-color: #555;
+}
+
+.dark-mode #rewards-table tr:hover {
+  background-color: #444;
+}
+
+/* Node Kurulum Rehberi Arayüzü Stilleri */
+.node-setup-guide {
+  margin: 2rem 0;
+  padding: 2rem;
+  background: linear-gradient(135deg, #ffd700, #daa520);
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.node-setup-guide h2 {
+  text-align: center;
+  color: #8b4513;
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
+}
+
+.guide-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.step {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 1.5rem;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.step h3 {
+  color: #8b4513;
+  margin-bottom: 0.5rem;
+}
+
+.step p {
+  color: #654321;
+  margin-bottom: 1rem;
+}
+
+.step pre {
+  background: #f8f8f8;
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.step code {
+  font-family: 'Courier New', Courier, monospace;
+  color: #4a90e2;
+}
+
+/* Karanlık Tema için Node Kurulum Rehberi Stilleri */
+.dark-mode .node-setup-guide {
+  background: linear-gradient(135deg, #333, #555);
+}
+
+.dark-mode .step {
+  background: rgba(51, 51, 51, 0.9);
+  color: #f5e6d3;
+}
+
+.dark-mode .step h3 {
+  color: #daa520;
+}
+
+.dark-mode .step p {
+  color: #f5e6d3;
+}
+
+.dark-mode .step pre {
+  background: #444;
+}
+
+.dark-mode .step code {
+  color: #4a90e2;
+}
+
+/* Etkileşimli Rehber Stilleri */
+.complete-button {
+  padding: 0.5rem 1rem;
+  background-color: #8b4513;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.complete-button:hover {
+  background-color: #654321;
+  transform: translateY(-2px);
+}
+
+.complete-button:disabled {
+  background-color: #4CAF50;
+  cursor: not-allowed;
+}
+
+/* Karanlık Tema için Etkileşimli Rehber Stilleri */
+.dark-mode .complete-button {
+  background-color: #555;
+}
+
+.dark-mode .complete-button:hover {
+  background-color: #666;
+}
+
+.dark-mode .complete-button:disabled {
+  background-color: #4CAF50;
+}
