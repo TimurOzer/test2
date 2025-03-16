@@ -23,21 +23,21 @@
         </header>
 <!-- Header'ın hemen altına ekleyin -->
 <button id="theme-toggle" class="theme-toggle">
-  <img src="icons/light-mode-icon.png" alt="Light Mode" id="theme-icon">
+  <img src="image/light-mode-icon.png" alt="Light Mode" id="theme-icon">
 </button>
 <div class="network-stats">
   <div class="stat-box">
-    <img src="icons/block-icon.png" alt="Blocks">
+    <img src="image/block-icon.png" alt="Blocks">
     <span id="total-blocks">0</span>
     <p>Total Blocks</p>
   </div>
   <div class="stat-box">
-    <img src="icons/transaction-icon.png" alt="Transactions">
+    <img src="image/transaction-icon.png" alt="Transactions">
     <span id="total-txs">0</span>
     <p>Transactions</p>
   </div>
   <div class="stat-box">
-    <img src="icons/node-icon.png" alt="Nodes">
+    <img src="image/node-icon.png" alt="Nodes">
     <span id="active-nodes">0</span>
     <p>Active Nodes</p>
   </div>
@@ -48,22 +48,22 @@
 			  <h2>🍯 Token Economics</h2>
 			  <div class="stats-container">
 				<div class="stat-box">
-				  <img src="icons/total-supply-icon.png" alt="Total Supply">
+				  <img src="image/total-supply-icon.png" alt="Total Supply">
 				  <span id="total-supply">0</span>
 				  <p>Total Supply</p>
 				</div>
 				<div class="stat-box">
-				  <img src="icons/circulating-supply-icon.png" alt="Circulating Supply">
+				  <img src="image/circulating-supply-icon.png" alt="Circulating Supply">
 				  <span id="circulating-supply">0</span>
 				  <p>Circulating Supply</p>
 				</div>
 				<div class="stat-box">
-				  <img src="icons/staked-tokens-icon.png" alt="Staked Tokens">
+				  <img src="image/staked-tokens-icon.png" alt="Staked Tokens">
 				  <span id="staked-tokens">0</span>
 				  <p>Staked Tokens</p>
 				</div>
 				<div class="stat-box">
-				  <img src="icons/token-price-icon.png" alt="Token Price">
+				  <img src="image/token-price-icon.png" alt="Token Price">
 				  <span id="token-price">0</span>
 				  <p>Token Price</p>
 				</div>
@@ -126,14 +126,55 @@
 			</div>
 			<div class="share-buttons">
 			  <button class="share-button twitter" data-url="https://baklava-blockchain.com/block/123" data-text="Check out this block on Baklava Blockchain!">
-				<img src="icons/twitter-icon.png" alt="Twitter"> Tweet
+				<img src="image/twitter-icon.png" alt="Twitter"> Tweet
 			  </button>
 			  <button class="share-button facebook" data-url="https://baklava-blockchain.com/block/123">
-				<img src="icons/facebook-icon.png" alt="Facebook"> Share
+				<img src="image/facebook-icon.png" alt="Facebook"> Share
 			  </button>
 			  <button class="share-button linkedin" data-url="https://baklava-blockchain.com/block/123">
-				<img src="icons/linkedin-icon.png" alt="LinkedIn"> Share
+				<img src="image/linkedin-icon.png" alt="LinkedIn"> Share
 			  </button>
+			</div>
+			<div class="block-comparison">
+			  <h2>🔍 Block Comparison</h2>
+			  <div class="comparison-controls">
+				<select id="block1-select">
+				  <option value="">Select Block 1</option>
+				</select>
+				<select id="block2-select">
+				  <option value="">Select Block 2</option>
+				</select>
+				<button id="compare-button">Compare</button>
+			  </div>
+			  <div class="comparison-results">
+				<div class="block-details" id="block1-details"></div>
+				<div class="block-details" id="block2-details"></div>
+			  </div>
+			</div>
+			<div class="token-swap">
+			  <h2>🔄 Token Swap Simulator</h2>
+			  <div class="swap-controls">
+				<div class="swap-input">
+				  <label for="from-token">From:</label>
+				  <select id="from-token">
+					<option value="BKV">BKV</option>
+					<option value="FILO">FILO</option>
+					<option value="ANTEP">ANTEP</option>
+				  </select>
+				  <input type="number" id="from-amount" placeholder="Amount" min="0">
+				</div>
+				<div class="swap-input">
+				  <label for="to-token">To:</label>
+				  <select id="to-token">
+					<option value="BKV">BKV</option>
+					<option value="FILO">FILO</option>
+					<option value="ANTEP">ANTEP</option>
+				  </select>
+				  <input type="number" id="to-amount" placeholder="Amount" min="0" disabled>
+				</div>
+				<button id="swap-button">Swap</button>
+			  </div>
+			  <div class="swap-result" id="swap-result"></div>
 			</div>
 			<div id="network-map" style="height: 500px; border-radius: 15px; margin: 2rem 0;"></div>		
             <div id="blockchain-container"></div>

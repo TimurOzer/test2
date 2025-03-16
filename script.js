@@ -516,3 +516,144 @@ themeToggle.addEventListener('click', () => {
   localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
   themeIcon.src = isDarkMode ? 'image/dark-mode-icon.png' : 'image/light-mode-icon.png';
 });
+
+// Blok karşılaştırma işlevselliği
+const block1Select = document.getElementById('block1-select');
+const block2Select = document.getElementById('block2-select');
+const compareButton = document.getElementById('compare-button');
+const block1Details = document.getElementById('block1-details');
+const block2Details = document.getElementById('block2-details');
+
+// Blok seçeneklerini doldurma
+function populateBlockSelects(blocks) {
+  blocks.forEach(block => {
+    const option = document.createElement('option');
+    option.value = block.block_hash;
+    option.textContent = `Block ${block.block_hash.slice(0, 6)}...${block.block_hash.slice(-4)}`;
+    block1Select.appendChild(option.cloneNode(true));
+    block2Select.appendChild(option.cloneNode(true));
+  });
+}
+
+// Blok detaylarını gösterme
+function showBlockDetails(block, container) {
+  container.innerHTML = `
+    <h3>Block Details</h3>
+    <p><strong>Hash:</strong> ${block.block_hash}</p>
+    <p><strong>Previous Hash:</strong> ${block.previous_hash}</p>
+    <p><strong>Timestamp:</strong> ${new Date(block.timestamp * 1000).toLocaleString()}</p>
+    <p><strong>Nonce:</strong> ${block.nonce}</p>
+    <p><strong>Transactions:</strong> ${block.transactions ? block.transactions.length : 0}</p>
+  `;
+}
+
+// Karşılaştırma butonuna tıklama olayı
+compareButton.addEventListener('click', async () => {
+  const block1Hash = block1Select.value;
+  const block2Hash = block2Select.value;
+
+  if (!block1Hash || !block2Hash) {
+    alert('Please select both blocks to compare.');
+    return;
+  }
+
+  const block1 = await fetchBlockDataByHash(block1Hash);
+  const block2 = await fetchBlockDataByHash(block2Hash);
+
+  if (block1 && block2) {
+    showBlockDetails(block1, block1Details);
+    showBlockDetails(block2, block2Details);
+  } else {
+    alert('Failed to fetch block details.');
+  }
+});
+
+// Blok verilerini hash'e göre çekme
+async function fetchBlockDataByHash(blockHash) {
+  try {
+    const response = await fetch(`/api/blocks/${blockHash}`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return await response.json();
+  } catch (error) {
+    console.error(`Error fetching block data:`, error);
+    return null;
+  }
+}
+
+// Sayfa yüklendiğinde blok seçeneklerini doldur
+document.addEventListener('DOMContentLoaded', async () => {
+  const blocks = await fetchAllBlocks();
+  populateBlockSelects(blocks);
+});
+
+// Tüm blokları çekme
+async function fetchAllBlocks() {
+  try {
+    const response = await fetch('/api/blocks');
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return await response.json();
+  } catch (error) {
+    console.error(`Error fetching all blocks:`, error);
+    return [];
+  }
+}
+
+// Token swap işlevselliği
+const fromTokenSelect = document.getElementById('from-token');
+const toTokenSelect = document.getElementById('to-token');
+const fromAmountInput = document.getElementById('from-amount');
+const toAmountInput = document.getElementById('to-amount');
+const swapButton = document.getElementById('swap-button');
+const swapResult = document.getElementById('swap-result');
+
+// Token swap oranları
+const exchangeRates = {
+  BKV: { FILO: 10, ANTEP: 5 },
+  FILO: { BKV: 0.1, ANTEP: 0.5 },
+  ANTEP: { BKV: 0.2, FILO: 2 },
+};
+
+// Swap işlemini simüle etme
+function simulateSwap(fromToken, toToken, amount) {
+  const rate = exchangeRates[fromToken][toToken];
+  if (!rate) {
+    swapResult.textContent = 'Invalid token pair.';
+    return;
+  }
+  const result = amount * rate;
+  toAmountInput.value = result.toFixed(2);
+  swapResult.textContent = `You will receive ${result.toFixed(2)} ${toToken} for ${amount} ${fromToken}.`;
+}
+
+// Swap butonuna tıklama olayı
+swapButton.addEventListener('click', () => {
+  const fromToken = fromTokenSelect.value;
+  const toToken = toTokenSelect.value;
+  const amount = parseFloat(fromAmountInput.value);
+
+  if (!amount || amount <= 0) {
+    swapResult.textContent = 'Please enter a valid amount.';
+    return;
+  }
+
+  simulateSwap(fromToken, toToken, amount);
+});
+
+// From token değiştiğinde to token'ı güncelleme
+fromTokenSelect.addEventListener('change', () => {
+  toTokenSelect.innerHTML = '';
+  const tokens = ['BKV', 'FILO', 'ANTEP'];
+  tokens.forEach(token => {
+    if (token !== fromTokenSelect.value) {
+      const option = document.createElement('option');
+      option.value = token;
+      option.textContent = token;
+      toTokenSelect.appendChild(option);
+    }
+  });
+});
+
+// Sayfa yüklendiğinde to token'ı başlangıçta güncelle
+document.addEventListener('DOMContentLoaded', () => {
+  fromTokenSelect.dispatchEvent(new Event('change'));
+});
