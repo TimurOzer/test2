@@ -238,20 +238,27 @@ async function visualizeBlockchain() {
 				`;
 			}
 
-			// Diğer özel alanlar
+			// Özel alanlar için dikdörtgen bölümler oluştur
 			const specialFields = {
-				hash: ['hash', 'merkleroot', 'signature', 'token_address', 'security_data', 'block_hash', 'prev_hash_1', 'prev_hash_2', 'recipient', 'sender'],
-				timestamp: ['timestamp', 'time', 'date'],
-				code: ['address', 'id', 'nonce', 'max_supply', 'recipient', 'amount', 'tag', 'airdrop', 'mining_reserve'],
-				status: ['status'],
 				fee: ['fee'],
 				network: ['network'],
 				block_size: ['block_size'],
 				block_height: ['block_height'],
 				tags: ['tags'],
-				priority: ['priority']
+				priority: ['priority'],
+				code: ['address', 'id', 'nonce', 'max_supply', 'recipient', 'amount', 'tag', 'airdrop', 'mining_reserve']
 			};
-
+			// Eğer alan özel bir alansa, özelleştirilmiş dikdörtgen bölüm oluştur
+			for (const [fieldType, fields] of Object.entries(specialFields)) {
+				if (fields.includes(key)) {
+					return `
+						<div class="${fieldType}-field">
+							<strong>${key}:</strong>
+							<span>${value}</span>
+						</div>
+					`;
+				}
+			}
 			if (specialFields.hash.some(f => key.toLowerCase().includes(f))) {
 				return `
 					<div class="copy-field" data-copy="${value}">

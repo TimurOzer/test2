@@ -282,49 +282,44 @@ h1 {
     border-radius: 6px;
     margin: 8px 0;
 }
-/* Timestamp Stilleri */
-.status-field {
-    padding: 8px;
-    background: #f8f8f8;
-    border-radius: 6px;
-    margin: 8px 0;
-}
-.fee-field {
-    padding: 8px;
-    background: #f8f8f8;
-    border-radius: 6px;
-    margin: 8px 0;
-}
-.network-field {
-    padding: 8px;
-    background: #f8f8f8;
-    border-radius: 6px;
-    margin: 8px 0;
-}
-.block_size-field {
-    padding: 8px;
-    background: #f8f8f8;
-    border-radius: 6px;
-    margin: 8px 0;
-}
-.block_height-field {
-    padding: 8px;
-    background: #f8f8f8;
-    border-radius: 6px;
-    margin: 8px 0;
-}
-.tags-field {
-    padding: 8px;
-    background: #f8f8f8;
-    border-radius: 6px;
-    margin: 8px 0;
-}
+
+/* Genel stil (code-field gibi) */
+.fee-field,
+.network-field,
+.block-size-field,
+.block-height-field,
+.tags-field,
 .priority-field {
+    background: #fff3e0;
     padding: 8px;
-    background: #f8f8f8;
-    border-radius: 6px;
-    margin: 8px 0;
+    border-radius: 4px;
+    margin: 5px 0;
+    position: relative;
+    transition: all 0.2s;
 }
+
+/* Fare üzerine gelindiğinde stil */
+.fee-field:hover,
+.network-field:hover,
+.block-size-field:hover,
+.block-height-field:hover,
+.tags-field:hover,
+.priority-field:hover {
+    background: #ffe0b2;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* İçerik stil */
+.fee-field span,
+.network-field span,
+.block-size-field span,
+.block-height-field span,
+.tags-field span,
+.priority-field span {
+    font-family: monospace;
+    color: #8b4513;
+}
+
 .human-time {
     font-size: 0.9em;
     color: #654321;
