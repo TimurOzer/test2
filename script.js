@@ -15,6 +15,7 @@ function openTransactionModal(txData) {
   document.getElementById('tx-fee').textContent = txData.fee || 'N/A'; // Fee bilgisi yoksa "N/A" göster
   document.getElementById('tx-timestamp').textContent = new Date(txData.timestamp * 1000).toLocaleString();
   document.getElementById('tx-status').textContent = txData.status || 'Confirmed';
+  document.getElementById('tx-type').textContent = txData.transaction_type || 'Transfer'; // İşlem türü
 
   modal.style.display = 'block';
 }
@@ -61,16 +62,23 @@ document.addEventListener('click', (event) => {
         setTimeout(() => notification.remove(), 2000);
     }
 
-    async function fetchBlockData(file) {
-        try {
-            const response = await fetch(`data/${file}`);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            return await response.json();
-        } catch (error) {
-            console.error(`Error fetching block data:`, error);
-            return null;
-        }
-    }
+	async function fetchBlockData(file) {
+	  try {
+		const response = await fetch(`data/${file}`);
+		if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+		const data = await response.json();
+		return {
+		  ...data,
+		  fee: data.fee || "0", // Fee bilgisi yoksa varsayılan değer
+		  status: data.status || "Confirmed", // Status bilgisi yoksa varsayılan değer
+		  transaction_type: data.transaction_type || "Transfer", // İşlem türü yoksa varsayılan değer
+		  metadata: data.metadata || {} // Metadata yoksa boş bir obje
+		};
+	  } catch (error) {
+		console.error(`Error fetching block data:`, error);
+		return null;
+	  }
+	}
 
 async function visualizeBlockchain() {
     container.innerHTML = '';
@@ -128,29 +136,29 @@ async function visualizeBlockchain() {
         container.appendChild(row);
     }
 
-    function createBlockElement(data) {
-        const block = document.createElement('div');
-        block.className = 'block';
+	function createBlockElement(data) {
+	  const block = document.createElement('div');
+	  block.className = 'block';
 
-        // Hash'i belirle ve kaydet
-        const mainHash = data.block_hash || data.security_hash || data.hash;
-        if (mainHash) {
-            block.id = mainHash.toLowerCase();
-            block.dataset.mainHash = mainHash;
-        }
+	  // Hash'i belirle ve kaydet
+	  const mainHash = data.block_hash || data.security_hash || data.hash;
+	  if (mainHash) {
+		block.id = mainHash.toLowerCase();
+		block.dataset.mainHash = mainHash;
+	  }
 
-        const header = document.createElement('div');
-        header.className = 'block-header';
-        header.textContent = data.blockName || "Baklava Block";
+	  const header = document.createElement('div');
+	  header.className = 'block-header';
+	  header.textContent = data.blockName || "Baklava Block";
 
-        const content = document.createElement('div');
-        content.className = 'block-content';
-        content.innerHTML = formatContent(data);
+	  const content = document.createElement('div');
+	  content.className = 'block-content';
+	  content.innerHTML = formatContent(data);
 
-        block.appendChild(header);
-        block.appendChild(content);
-        return block;
-    }
+	  block.appendChild(header);
+	  content.appendChild(content);
+	  return block;
+	}
 
 	function formatContent(data) {
 	  return Object.entries(data).map(([key, value]) => {
@@ -170,20 +178,59 @@ async function visualizeBlockchain() {
 				  sender: data.sender,
 				  recipient: data.recipient,
 				  amount: data.amount,
-				  fee: 0, // Fee bilgisi yoksa varsayılan değer
+				  fee: data.fee || 0, // Fee bilgisi yoksa varsayılan değer
 				  timestamp: data.timestamp,
-				  status: 'Confirmed' // Varsayılan durum
+				  status: data.status || 'Confirmed' // Varsayılan durum
 				})}'>View</button>
 			  </div>
 			</div>
 		  `;
 		}
 
-		// Diğer alanlar
+		// Metadata alanını özel bir şekilde göster
+		if (key === 'metadata') {
+		  return `
+			<div class="metadata-container">
+			  <strong>Metadata:</strong>
+			  <div class="metadata-content">
+				${Object.entries(value).map(([metaKey, metaValue]) => `
+				  <div class="metadata-field">
+					<strong>${metaKey}:</strong> ${metaValue}
+				  </div>
+				`).join('')}
+			  </div>
+			</div>
+		  `;
+		}
+
+		// Akıllı kontrat bilgilerini göster
+		if (key === 'smart_contract') {
+		  return `
+			<div class="smart-contract-container">
+			  <strong>Smart Contract:</strong>
+			  <div class="smart-contract-content">
+				${Object.entries(value).map(([scKey, scValue]) => `
+				  <div class="smart-contract-field">
+					<strong>${scKey}:</strong> ${scValue}
+				  </div>
+				`).join('')}
+			  </div>
+			</div>
+		  `;
+		}
+
+		// Diğer özel alanlar
 		const specialFields = {
 		  hash: ['hash', 'merkleroot', 'signature', 'token_address', 'security_data', 'block_hash', 'prev_hash_1', 'prev_hash_2', 'recipient', 'sender'],
 		  timestamp: ['timestamp', 'time', 'date'],
-		  code: ['address', 'id', 'nonce', 'max_supply', 'recipient', 'amount', 'tag', 'airdrop', 'mining_reserve']
+		  code: ['address', 'id', 'nonce', 'max_supply', 'recipient', 'amount', 'tag', 'airdrop', 'mining_reserve'],
+		  status: ['status'],
+		  fee: ['fee'],
+		  network: ['network'],
+		  block_size: ['block_size'],
+		  block_height: ['block_height'],
+		  tags: ['tags'],
+		  priority: ['priority']
 		};
 
 		if (specialFields.hash.some(f => key.toLowerCase().includes(f))) {
