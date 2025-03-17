@@ -1,10 +1,24 @@
 {
-    "previous_hash": "00001f7329df3e3eeaaba753c118ce96cb8972039adb22bda103906eeaa3e4f1",
+    "version": "1.0",
+    "transaction_id": "f8f5f88e-0da4-45aa-8d53-c30deb3e87e0",
+    "previous_hash": "00009450123b943c0b95d7d97b173b180707ce8a16a853d1e265ee6988688ce0",
     "sender": "SYSTEM",
-    "recipient": "1GsD7f12To5bJ9v5EjShE1Cdg2YBjXgN4E",
+    "recipient": "1HBpvVonSzBbQ9g5UXGGsimjrxXNL9CJYZ",
     "amount": "0",
     "tag": "wallet",
-    "timestamp": 1742044715.2796216,
+    "timestamp": 1742225708.9151378,
     "nonce": 0,
-    "block_hash": "51dd52a85b9e4139d41681878e9e9ec3367874f3d47dc5660eea76550620e9de"
+    "transaction_type": "transfer",
+    "status": "pending",
+    "fee": "0",
+    "smart_contract": {},
+    "signature": null,
+    "difficulty": "100000",
+    "block_size": "1024",
+    "network": "mainnet",
+    "block_height": 0,
+    "tags": [],
+    "priority": "medium",
+    "metadata": {},
+    "block_hash": "cfd2f18e7d49d7c549eb3109f7a40a27ccdfc6192d176e974b1be5833dfee74b"
 }

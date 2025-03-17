@@ -1,12 +1,27 @@
 {
+    "version": "1.0",
+    "transaction_id": "02eda86e-cfcf-4102-91d2-5f66efadfd48",
     "token_address": "bklvdc38569a110702c2fed1164021f0539df178",
     "max_supply": 100000000,
-    "timestamp": 1742044702.7969472,
+    "timestamp": 1742225705.5311127,
     "prev_hash_1": "0000000000000000000000000000000000000000000000000000000000000000",
     "prev_hash_2": "0000000000000000000000000000000000000000000000000000000000000000",
-    "nonce": 86479,
-    "block_hash": "00001f7329df3e3eeaaba753c118ce96cb8972039adb22bda103906eeaa3e4f1",
-    "security_hash": "e4c148375e3f7c2843cdaff7f95419c991ca4466d8ea88f75b2f61e22b55934b",
-    "airdrop_reserve": 49999999,
-    "mining_reserve": 49999977.77777779
+    "nonce": 40715,
+    "block_hash": "00009450123b943c0b95d7d97b173b180707ce8a16a853d1e265ee6988688ce0",
+    "security_hash": "b8be7a17c4c76a591ed9754cdacdc6d074992dccc059352436644b0911560ec3",
+    "transaction_type": "genesis",
+    "status": "confirmed",
+    "fee": "0",
+    "smart_contract": {},
+    "signature": null,
+    "block_size": "1024",
+    "network": "mainnet",
+    "block_height": 0,
+    "tags": [
+        "genesis"
+    ],
+    "priority": "high",
+    "metadata": {},
+    "airdrop_reserve": 50000000,
+    "mining_reserve": 50000000
 }

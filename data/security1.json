@@ -1,5 +1,15 @@
 {
-    "security_data": "e4c148375e3f7c2843cdaff7f95419c991ca4466d8ea88f75b2f61e22b55934b",
-    "timestamp": 1742044715.2808177,
-    "security_hash": "d71522d23cb0b28ca3971b25104da903ab9d97dcc5cf79bef384e13e9d0c8f68"
+    "security_data": "b8be7a17c4c76a591ed9754cdacdc6d074992dccc059352436644b0911560ec3",
+    "security_type": "data_integrity",
+    "audit_data": {},
+    "fraud_detection": {},
+    "data_integrity_check": {},
+    "security_signature": null,
+    "threat_level": "low",
+    "related_blocks": [],
+    "security_timestamp": 1742225708.9159381,
+    "action_taken": null,
+    "metadata": {},
+    "timestamp": 1742225708.9159393,
+    "security_hash": "6f9d7f015817a1b9755c20f4d402c4255f9705257791ea50b7f493007da8ac04"
 }

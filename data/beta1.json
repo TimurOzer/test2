@@ -1,7 +1,16 @@
 {
-    "prev_alpha_hash": "51dd52a85b9e4139d41681878e9e9ec3367874f3d47dc5660eea76550620e9de",
-    "prev_security_hash": "d71522d23cb0b28ca3971b25104da903ab9d97dcc5cf79bef384e13e9d0c8f68",
-    "timestamp": 1742044715.281582,
-    "block_hash": "29ab961107c53d0e7328da987704575e16e47bec9ccd8fcbfe216b57b71558a1",
-    "security_hash": "6dc0f36db8277ad18bbdc35a4e18cc5a1da5ffd28a3ad9dba23da4f859795330"
+    "prev_alpha_hash": "cfd2f18e7d49d7c549eb3109f7a40a27ccdfc6192d176e974b1be5833dfee74b",
+    "prev_security_hash": "6f9d7f015817a1b9755c20f4d402c4255f9705257791ea50b7f493007da8ac04",
+    "block_type": "bridge",
+    "consensus_data": {},
+    "linked_blocks": [],
+    "integrity_check": {},
+    "metadata": {},
+    "security_level": "medium",
+    "transaction_summary": {},
+    "checkpoint_data": {},
+    "signature": null,
+    "timestamp": 1742225708.9164317,
+    "block_hash": "9ff0b8efad19ca5317b2b9230ed0348fc2de59ff90c11819a3d10f0e3ec1661b",
+    "security_hash": "92af94bf1a3f6699d3bff422edc860b01dd3e567cad3eb0b0a1a83864b4c2111"
 }
