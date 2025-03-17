@@ -170,121 +170,121 @@ async function visualizeBlockchain() {
 	}
 
 	function formatContent(data) {
-	  return Object.entries(data).map(([key, value]) => {
-		// Transfer bilgilerini özel bir alanda göster
-		if (key === 'sender' || key === 'recipient' || key === 'amount') {
-		  return ''; // Bu alanları ayrıca göstermeye gerek yok, çünkü transfer bilgisi olarak göstereceğiz.
-		}
-		
-        if (value === null || value === "" || (typeof value === "object" && Object.keys(value).length === 0)) {
-            value = "N/A";
-        }
+		return Object.entries(data).map(([key, value]) => {
+			// Eğer değer boşsa veya null ise, "N/A" olarak göster
+			if (value === null || value === "" || (typeof value === "object" && Object.keys(value).length === 0)) {
+				value = "N/A";
+			}
 
-        // Eğer değer bir obje ise, JSON formatında göster
-        if (typeof value === "object" && value !== null) {
-            value = JSON.stringify(value, null, 2);
-        }
+			// Eğer değer bir obje ise, JSON formatında göster
+			if (typeof value === "object" && value !== null) {
+				value = JSON.stringify(value, null, 2);
+			}
 
-		// Transfer bilgilerini özel bir alanda göster
-		if (key === 'tag' && value === 'transfer') {
-		  return `
-			<div class="transfer-container">
-			  <strong>Transfer:</strong>
-			  <div class="transfer-hover-area">
-				<span class="transfer-summary">${data.sender.slice(0, 6)}...${data.sender.slice(-4)} → ${data.recipient.slice(0, 6)}...${data.recipient.slice(-4)}</span>
-				<button class="view-button" data-tx='${JSON.stringify({
-				  sender: data.sender,
-				  recipient: data.recipient,
-				  amount: data.amount,
-				  fee: data.fee || 0, // Fee bilgisi yoksa varsayılan değer
-				  timestamp: data.timestamp,
-				  status: data.status || 'Confirmed' // Varsayılan durum
-				})}'>View</button>
-			  </div>
-			</div>
-		  `;
-		}
+			// Transfer bilgilerini özel bir alanda göster
+			if (key === 'sender' || key === 'recipient' || key === 'amount') {
+				return ''; // Bu alanları ayrıca göstermeye gerek yok, çünkü transfer bilgisi olarak göstereceğiz.
+			}
 
-		// Metadata alanını özel bir şekilde göster
-		if (key === 'metadata') {
-		  return `
-			<div class="metadata-container">
-			  <strong>Metadata:</strong>
-			  <div class="metadata-content">
-				${Object.entries(value).map(([metaKey, metaValue]) => `
-				  <div class="metadata-field">
-					<strong>${metaKey}:</strong> ${metaValue}
-				  </div>
-				`).join('')}
-			  </div>
-			</div>
-		  `;
-		}
+			// Transfer bilgilerini özel bir alanda göster
+			if (key === 'tag' && value === 'transfer') {
+				return `
+					<div class="transfer-container">
+						<strong>Transfer:</strong>
+						<div class="transfer-hover-area">
+							<span class="transfer-summary">${data.sender.slice(0, 6)}...${data.sender.slice(-4)} → ${data.recipient.slice(0, 6)}...${data.recipient.slice(-4)}</span>
+							<button class="view-button" data-tx='${JSON.stringify({
+								sender: data.sender,
+								recipient: data.recipient,
+								amount: data.amount,
+								fee: data.fee || 0, // Fee bilgisi yoksa varsayılan değer
+								timestamp: data.timestamp,
+								status: data.status || 'Confirmed' // Varsayılan durum
+							})}'>View</button>
+						</div>
+					</div>
+				`;
+			}
 
-		// Akıllı kontrat bilgilerini göster
-		if (key === 'smart_contract') {
-		  return `
-			<div class="smart-contract-container">
-			  <strong>Smart Contract:</strong>
-			  <div class="smart-contract-content">
-				${Object.entries(value).map(([scKey, scValue]) => `
-				  <div class="smart-contract-field">
-					<strong>${scKey}:</strong> ${scValue}
-				  </div>
-				`).join('')}
-			  </div>
-			</div>
-		  `;
-		}
+			// Metadata alanını özel bir şekilde göster
+			if (key === 'metadata') {
+				return `
+					<div class="metadata-container">
+						<strong>Metadata:</strong>
+						<div class="metadata-content">
+							${Object.entries(value).map(([metaKey, metaValue]) => `
+								<div class="metadata-field">
+									<strong>${metaKey}:</strong> ${metaValue}
+								</div>
+							`).join('')}
+						</div>
+					</div>
+				`;
+			}
 
-		// Diğer özel alanlar
-		const specialFields = {
-		  hash: ['hash', 'merkleroot', 'signature', 'token_address', 'security_data', 'block_hash', 'prev_hash_1', 'prev_hash_2', 'recipient', 'sender'],
-		  timestamp: ['timestamp', 'time', 'date'],
-		  code: ['address', 'id', 'nonce', 'max_supply', 'recipient', 'amount', 'tag', 'airdrop', 'mining_reserve'],
-		  status: ['status'],
-		  fee: ['fee'],
-		  network: ['network'],
-		  block_size: ['block_size'],
-		  block_height: ['block_height'],
-		  tags: ['tags'],
-		  priority: ['priority']
-		};
+			// Akıllı kontrat bilgilerini göster
+			if (key === 'smart_contract') {
+				return `
+					<div class="smart-contract-container">
+						<strong>Smart Contract:</strong>
+						<div class="smart-contract-content">
+							${Object.entries(value).map(([scKey, scValue]) => `
+								<div class="smart-contract-field">
+									<strong>${scKey}:</strong> ${scValue}
+								</div>
+							`).join('')}
+						</div>
+					</div>
+				`;
+			}
 
-		if (specialFields.hash.some(f => key.toLowerCase().includes(f))) {
-		  return `
-			<div class="copy-field" data-copy="${value}">
-			  <strong>${key}:</strong>
-			  <span class="short-value">${value.slice(0, 6)}...${value.slice(-4)}</span>
-			  <span class="copy-hint">Click to copy</span>
-			</div>
-		  `;
-		}
+			// Diğer özel alanlar
+			const specialFields = {
+				hash: ['hash', 'merkleroot', 'signature', 'token_address', 'security_data', 'block_hash', 'prev_hash_1', 'prev_hash_2', 'recipient', 'sender'],
+				timestamp: ['timestamp', 'time', 'date'],
+				code: ['address', 'id', 'nonce', 'max_supply', 'recipient', 'amount', 'tag', 'airdrop', 'mining_reserve'],
+				status: ['status'],
+				fee: ['fee'],
+				network: ['network'],
+				block_size: ['block_size'],
+				block_height: ['block_height'],
+				tags: ['tags'],
+				priority: ['priority']
+			};
 
-		if (specialFields.timestamp.includes(key.toLowerCase())) {
-		  const date = new Date(value * 1000).toLocaleString();
-		  return `
-			<div class="copy-field" data-copy="${value}">
-			  <strong>${key}:</strong>
-			  <span>${date}</span>
-			  <span class="copy-hint">Click to copy Unix time</span>
-			</div>
-		  `;
-		}
+			if (specialFields.hash.some(f => key.toLowerCase().includes(f))) {
+				return `
+					<div class="copy-field" data-copy="${value}">
+						<strong>${key}:</strong>
+						<span class="short-value">${value.slice(0, 6)}...${value.slice(-4)}</span>
+						<span class="copy-hint">Click to copy</span>
+					</div>
+				`;
+			}
 
-		if (specialFields.code.some(f => key.toLowerCase().includes(f))) {
-		  return `
-			<div class="copy-field">
-			  <strong>${key}:</strong>
-			  <span>${value}</span>
-			</div>
-		  `;
-		}
+			if (specialFields.timestamp.includes(key.toLowerCase())) {
+				const date = new Date(value * 1000).toLocaleString();
+				return `
+					<div class="copy-field" data-copy="${value}">
+						<strong>${key}:</strong>
+						<span>${date}</span>
+						<span class="copy-hint">Click to copy Unix time</span>
+					</div>
+				`;
+			}
 
-		return `<div class="data-field"><strong>${key}:</strong> ${value}</div>`;
-	  }).join('');
+			if (specialFields.code.some(f => key.toLowerCase().includes(f))) {
+				return `
+					<div class="copy-field">
+						<strong>${key}:</strong>
+						<span>${value}</span>
+					</div>
+				`;
+			}
+
+			return `<div class="data-field"><strong>${key}:</strong> ${value}</div>`;
+		}).join('');
 	}
-
     function registerHashes(data, element) {
         const hashFields = [
             'block_hash', 'security_hash', 'prev_alpha_hash',
