@@ -238,15 +238,19 @@ async function visualizeBlockchain() {
 				`;
 			}
 
-			// Özel alanlar için dikdörtgen bölümler oluştur
 			const specialFields = {
-				fee: ['fee'],
-				network: ['network'],
-				block_size: ['block_size'],
-				block_height: ['block_height'],
-				tags: ['tags'],
-				priority: ['priority'],
-				code: ['address', 'id', 'nonce', 'max_supply', 'recipient', 'amount', 'tag', 'airdrop', 'mining_reserve']
+			  fee: ['fee'],
+			  network: ['network'],
+			  block_size: ['block_size'],
+			  block_height: ['block_height'],
+			  tags: ['tags'],
+			  priority: ['priority'],
+			  code: ['address', 'id', 'nonce', 'max_supply'],
+			  hash: [
+				'block_hash', 'security_hash', 'prev_alpha_hash',
+				'prev_security_hash', 'prev_hash_1', 'prev_hash_2'
+			  ],
+			  transfer: ['sender', 'recipient', 'amount']
 			};
 			// Eğer alan özel bir alansa, özelleştirilmiş dikdörtgen bölüm oluştur
 			for (const [fieldType, fields] of Object.entries(specialFields)) {
