@@ -282,7 +282,49 @@ h1 {
     border-radius: 6px;
     margin: 8px 0;
 }
-
+/* Timestamp Stilleri */
+.status-field {
+    padding: 8px;
+    background: #f8f8f8;
+    border-radius: 6px;
+    margin: 8px 0;
+}
+.fee-field {
+    padding: 8px;
+    background: #f8f8f8;
+    border-radius: 6px;
+    margin: 8px 0;
+}
+.network-field {
+    padding: 8px;
+    background: #f8f8f8;
+    border-radius: 6px;
+    margin: 8px 0;
+}
+.block_size-field {
+    padding: 8px;
+    background: #f8f8f8;
+    border-radius: 6px;
+    margin: 8px 0;
+}
+.block_height-field {
+    padding: 8px;
+    background: #f8f8f8;
+    border-radius: 6px;
+    margin: 8px 0;
+}
+.tags-field {
+    padding: 8px;
+    background: #f8f8f8;
+    border-radius: 6px;
+    margin: 8px 0;
+}
+.priority-field {
+    padding: 8px;
+    background: #f8f8f8;
+    border-radius: 6px;
+    margin: 8px 0;
+}
 .human-time {
     font-size: 0.9em;
     color: #654321;

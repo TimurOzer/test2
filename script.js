@@ -85,7 +85,7 @@ async function visualizeBlockchain() {
 
     // Genesis bloğunu çek
     const genesisBlock = await fetchBlockData('genesis_block.json');
-    if (genesisBlock) {
+    if (genesisBlock && Object.keys(genesisBlock).length > 0) {
         createBlockRow([genesisBlock], 'genesis-row');
     } else {
         console.error('Genesis block not found or invalid.');
@@ -101,11 +101,18 @@ async function visualizeBlockchain() {
                 fetchBlockData(`beta${i}.json`)
             ]);
 
-            // Eğer bloklar boşsa veya geçersizse bile görüntüle
-            createBlockRow([alphaBlock || {}, securityBlock || {}], `layer-${i}`);
-            createBlockRow([betaBlock || {}], `beta-${i}`);
+            // Eğer bloklar boş değilse görüntüle
+            if (alphaBlock && Object.keys(alphaBlock).length > 0) {
+                createBlockRow([alphaBlock], `alpha-${i}`);
+            }
+            if (securityBlock && Object.keys(securityBlock).length > 0) {
+                createBlockRow([securityBlock], `security-${i}`);
+            }
+            if (betaBlock && Object.keys(betaBlock).length > 0) {
+                createBlockRow([betaBlock], `beta-${i}`);
+            }
 
-            // Eğer bloklar tamamen boşsa döngüyü sonlandır
+            // Eğer tüm bloklar boşsa döngüyü sonlandır
             if (!alphaBlock && !securityBlock && !betaBlock) {
                 console.log(`Blok seti ${i} tamamen boş. Döngü sonlandırılıyor.`);
                 break;
