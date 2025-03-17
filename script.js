@@ -82,11 +82,14 @@ document.addEventListener('click', (event) => {
 
 async function visualizeBlockchain() {
     container.innerHTML = '';
-    hashRegistry.clear();
 
     // Genesis bloğunu çek
     const genesisBlock = await fetchBlockData('genesis_block.json');
-    createBlockRow([genesisBlock], 'genesis-row');
+    if (genesisBlock) {
+        createBlockRow([genesisBlock], 'genesis-row');
+    } else {
+        console.error('Genesis block not found or invalid.');
+    }
 
     let i = 1;
     while (true) {
@@ -98,18 +101,15 @@ async function visualizeBlockchain() {
                 fetchBlockData(`beta${i}.json`)
             ]);
 
-            // Eğer bloklar boşsa veya geçersizse döngüyü sonlandır
-            if (!alphaBlock || !securityBlock || !betaBlock || 
-                Object.keys(alphaBlock).length === 0 || 
-                Object.keys(securityBlock).length === 0 || 
-                Object.keys(betaBlock).length === 0) {
-                console.log(`Blok seti ${i} boş veya geçersiz. Döngü sonlandırılıyor.`);
+            // Eğer bloklar boşsa veya geçersizse bile görüntüle
+            createBlockRow([alphaBlock || {}, securityBlock || {}], `layer-${i}`);
+            createBlockRow([betaBlock || {}], `beta-${i}`);
+
+            // Eğer bloklar tamamen boşsa döngüyü sonlandır
+            if (!alphaBlock && !securityBlock && !betaBlock) {
+                console.log(`Blok seti ${i} tamamen boş. Döngü sonlandırılıyor.`);
                 break;
             }
-
-            // Blokları görselleştir
-            createBlockRow([alphaBlock, securityBlock], `layer-${i}`);
-            createBlockRow([betaBlock], `beta-${i}`);
 
             i++; // Sonraki blok setine geç
         } catch (error) {
@@ -137,27 +137,29 @@ async function visualizeBlockchain() {
     }
 
 	function createBlockElement(data) {
-	  const block = document.createElement('div');
-	  block.className = 'block';
+		const block = document.createElement('div');
+		block.className = 'block';
 
-	  // Hash'i belirle ve kaydet
-	  const mainHash = data.block_hash || data.security_hash || data.hash;
-	  if (mainHash) {
-		block.id = mainHash.toLowerCase();
-		block.dataset.mainHash = mainHash;
-	  }
+		// Hash'i belirle ve kaydet
+		const mainHash = data.block_hash || data.security_hash || data.hash;
+		if (mainHash) {
+			block.id = mainHash.toLowerCase();
+			block.dataset.mainHash = mainHash;
+		}
 
-	  const header = document.createElement('div');
-	  header.className = 'block-header';
-	  header.textContent = data.blockName || "Baklava Block";
+		const header = document.createElement('div');
+		header.className = 'block-header';
+		header.textContent = data.blockName || "Baklava Block";
 
-	  const content = document.createElement('div');
-	  content.className = 'block-content';
-	  content.innerHTML = formatContent(data);
+		const content = document.createElement('div');
+		content.className = 'block-content';
+		content.innerHTML = formatContent(data);
 
-	  block.appendChild(header);
-	  content.appendChild(content);
-	  return block;
+		block.appendChild(header);
+		block.appendChild(content);
+
+		console.log('Created block element:', block); // Blok elementini konsola yazdır
+		return block;
 	}
 
 	function formatContent(data) {
@@ -166,6 +168,15 @@ async function visualizeBlockchain() {
 		if (key === 'sender' || key === 'recipient' || key === 'amount') {
 		  return ''; // Bu alanları ayrıca göstermeye gerek yok, çünkü transfer bilgisi olarak göstereceğiz.
 		}
+		
+        if (value === null || value === "" || (typeof value === "object" && Object.keys(value).length === 0)) {
+            value = "N/A";
+        }
+
+        // Eğer değer bir obje ise, JSON formatında göster
+        if (typeof value === "object" && value !== null) {
+            value = JSON.stringify(value, null, 2);
+        }
 
 		// Transfer bilgilerini özel bir alanda göster
 		if (key === 'tag' && value === 'transfer') {
